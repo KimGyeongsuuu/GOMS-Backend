@@ -2,6 +2,7 @@ package main
 
 import (
 	"GOMS-BACKEND-GO/model"
+	"GOMS-BACKEND-GO/router"
 	"fmt"
 	"log"
 	"os"
@@ -30,15 +31,6 @@ func main() {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Fatal("Failed to get *sql.DB from GORM:", err)
-	}
-
-	if err := sqlDB.Ping(); err != nil {
-		log.Fatal("Failed to connect to the database:", err)
-	}
-
 	fmt.Println("Connected to MySQL using GORM!")
 
 	err = db.AutoMigrate(&model.Account{})
@@ -48,6 +40,12 @@ func main() {
 
 	if err != nil {
 		log.Fatal("Failed to migrate table:", err)
+	}
+
+	r := router.SetupRouter(db)
+
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal("Server failed to start:", err)
 	}
 
 }
