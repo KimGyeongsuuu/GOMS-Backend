@@ -7,3 +7,8 @@ type SignUpInput struct {
 	Major    string
 	Gender   string
 }
+
+type SignInInput struct {
+	Email    string
+	Password string
+}

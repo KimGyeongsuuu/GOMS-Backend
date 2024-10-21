@@ -11,3 +11,12 @@ func EncodePassword(password string) (string, error) {
 	}
 	return string(encodedPassword), nil
 }
+
+func IsPasswordMatch(rawPassword string, encodedPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(encodedPassword), []byte(rawPassword))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+
+}

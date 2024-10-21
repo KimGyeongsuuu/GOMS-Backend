@@ -1,21 +1,26 @@
 package service
 
 import (
+	"GOMS-BACKEND-GO/global/jwt"
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
+	"GOMS-BACKEND-GO/model/data/constant"
 	"GOMS-BACKEND-GO/model/data/input"
+	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"errors"
 	"time"
 )
 
 type AuthService struct {
-	accountRepo model.AccountRepository
+	accountRepo  model.AccountRepository
+	tokenAdapter *jwt.GenerateTokenAdapter
 }
 
-func NewAuthService(accountRepo model.AccountRepository) model.AuthUseCase {
+func NewAuthService(accountRepo model.AccountRepository, tokenAdapter *jwt.GenerateTokenAdapter) model.AuthUseCase {
 	return &AuthService{
-		accountRepo: accountRepo,
+		accountRepo:  accountRepo,
+		tokenAdapter: tokenAdapter,
 	}
 }
 
@@ -40,14 +45,44 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 		Password:   encodedPassword,
 		Grade:      *extractGrade(input.Email),
 		Name:       input.Name,
-		Major:      model.Major(input.Major),
-		Gender:     model.Gender(input.Gender),
+		Major:      constant.Major(input.Major),
+		Gender:     constant.Gender(input.Gender),
 		ProfileURL: nil,
-		Authority:  model.ROLE_STUDENT,
+		Authority:  constant.ROLE_STUDENT,
 		CreatedAt:  time.Now(),
 	}
 
 	return service.accountRepo.CreateAccount(ctx, account)
+
+}
+
+func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput) (output.TokenOutput, error) {
+	account, err := service.accountRepo.FindByEmail(ctx, input.Email)
+
+	if err != nil {
+		return output.TokenOutput{}, err
+	}
+
+	if account == nil {
+		return output.TokenOutput{}, errors.New("존재하지 않는 Account 입니다.")
+	}
+
+	isValidPassword, err := util.IsPasswordMatch(input.Password, account.Password)
+	if err != nil {
+		return output.TokenOutput{}, err
+	}
+
+	if !isValidPassword {
+		return output.TokenOutput{}, errors.New("비밀번호가 일치하지 않습니다.")
+	}
+
+	tokenOutput, err := service.tokenAdapter.GenerateToken(ctx, account.ID, account.Authority)
+
+	if err != nil {
+		return output.TokenOutput{}, err
+	}
+
+	return tokenOutput, nil
 
 }
 
