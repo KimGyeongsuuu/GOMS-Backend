@@ -29,3 +29,15 @@ func (repository *AccountRepository) ExistsByEmail(ctx context.Context, email st
 	}
 	return count > 0, nil
 }
+
+func (repository *AccountRepository) FindByEmail(ctx context.Context, email string) (*model.Account, error) {
+	var account model.Account
+	result := repository.db.WithContext(ctx).Where("email = ?", email).First(&account)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+	return &account, nil
+}
