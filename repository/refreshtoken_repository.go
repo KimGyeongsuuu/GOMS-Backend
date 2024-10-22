@@ -7,17 +7,14 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"gorm.io/gorm"
 )
 
 type RefreshTokenRepository struct {
-	db  *gorm.DB
 	rdb *redis.Client
 }
 
-func NewRefreshTokenRepository(db *gorm.DB, rdb *redis.Client) *RefreshTokenRepository {
+func NewRefreshTokenRepository(rdb *redis.Client) *RefreshTokenRepository {
 	return &RefreshTokenRepository{
-		db:  db,
 		rdb: rdb,
 	}
 }
