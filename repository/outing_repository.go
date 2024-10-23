@@ -3,6 +3,7 @@ package repository
 import (
 	"GOMS-BACKEND-GO/model"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -36,4 +37,19 @@ func (repository *OutingRepository) ExistsOutingByAccountID(ctx context.Context,
 func (repository *OutingRepository) DeleteOutingByAccountID(ctx context.Context, accountID uint64) error {
 	result := repository.db.WithContext(ctx).Where("account_id = ?", accountID).Delete(&model.Outing{})
 	return result.Error
+}
+
+func (repository *OutingRepository) FindAllOuting(ctx context.Context) ([]model.Outing, error) {
+	var outings []model.Outing
+	result := repository.db.WithContext(ctx).Find(&outings)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(outings) == 0 {
+		return nil, errors.New("no outings found")
+	}
+
+	return outings, nil
 }

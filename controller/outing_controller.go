@@ -37,3 +37,15 @@ func (controller *OutingController) OutingStudent(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 
 }
+
+func (controller *OutingController) ListOutingStudent(ctx *gin.Context) {
+	outings, err := controller.outingUseCase.FindAllOutingStudent(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve outing-students"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"outing-students": outings})
+
+}

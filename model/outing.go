@@ -1,6 +1,7 @@
 package model
 
 import (
+	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"time"
 
@@ -16,10 +17,12 @@ type Outing struct {
 }
 type OutingUseCase interface {
 	OutingStudent(c *gin.Context, ctx context.Context, outingUUID uuid.UUID) error
+	FindAllOutingStudent(ctx context.Context) ([]output.OutingStudentOutput, error)
 }
 
 type OutingRepository interface {
 	SaveOutingStudnet(ctx context.Context, outing *Outing) error
 	ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error)
 	DeleteOutingByAccountID(ctx context.Context, accountID uint64) error
+	FindAllOuting(ctx context.Context) ([]Outing, error)
 }

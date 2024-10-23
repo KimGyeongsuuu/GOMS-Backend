@@ -3,6 +3,7 @@ package service
 import (
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
+	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"errors"
 	"time"
@@ -31,14 +32,14 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 		return err
 	}
 
-	// 유효한 외출UUID 인지 검증
+	// 유효한 외출 UUID 인지 검증
 	existsOutingUUID, err := service.outingUUidRepo.ExistsByOutingUUID(ctx, outingUUID)
 
 	if err != nil {
 		return errors.New("failed to outing UUID")
 	}
 	if !existsOutingUUID {
-		return errors.New("Invalid outing UUID")
+		return errors.New("invalid outing UUID")
 	}
 
 	// account id를 기반으로 account 추출
@@ -64,4 +65,35 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 	}
 
 	return err
+}
+
+func (service *OutingService) FindAllOutingStudent(ctx context.Context) ([]output.OutingStudentOutput, error) {
+	outings, err := service.outingRepo.FindAllOuting(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var outingStudentOutputs []output.OutingStudentOutput
+
+	for _, outing := range outings {
+		account, err := service.accountRepo.FindByAccountID(ctx, outing.AccountID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		outingStudentOutput := output.OutingStudentOutput{
+			AccountID:   account.ID,
+			Name:        account.Name,
+			Grade:       account.Grade,
+			Major:       account.Major,
+			Gender:      account.Gender,
+			ProfileURL:  account.ProfileURL,
+			CreatedTime: outing.CreatedAt,
+		}
+
+		outingStudentOutputs = append(outingStudentOutputs, outingStudentOutput)
+	}
+
+	return outingStudentOutputs, nil
 }
