@@ -64,7 +64,7 @@ func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput
 	}
 
 	if account == nil {
-		return output.TokenOutput{}, errors.New("존재하지 않는 Account 입니다.")
+		return output.TokenOutput{}, errors.New("not found account")
 	}
 
 	isValidPassword, err := util.IsPasswordMatch(input.Password, account.Password)
@@ -73,7 +73,7 @@ func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput
 	}
 
 	if !isValidPassword {
-		return output.TokenOutput{}, errors.New("비밀번호가 일치하지 않습니다.")
+		return output.TokenOutput{}, errors.New("mis match password")
 	}
 
 	tokenOutput, err := service.tokenAdapter.GenerateToken(ctx, account.ID, account.Authority)

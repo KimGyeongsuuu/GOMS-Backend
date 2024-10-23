@@ -63,7 +63,7 @@ func main() {
 	authController := controller.NewAuthController(authUseCase)
 
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo)
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 
 	outingRepo := repository.NewOutingRepository(db)
@@ -90,13 +90,14 @@ func main() {
 	{
 		studentCouncil.Use(middleware.AuthorizeRoleJWT(jwtProperties.AccessSecret, "ROLE_STUDENT_COUNCIL"))
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
+		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
 	}
 	outing := r.Group("/api/v1/outing")
 	{
-		outing.POST("/:outingUUID", outingController.OutingStudent)
+		outing.POST(":outingUUID", outingController.OutingStudent)
 		outing.GET("", outingController.ListOutingStudent)
-		outing.GET("/count", outingController.CountOutingStudent)
-		outing.GET("/search", outingController.SearchOutingStudent)
+		outing.GET("count", outingController.CountOutingStudent)
+		outing.GET("search", outingController.SearchOutingStudent)
 	}
 
 	if err := r.Run(":8080"); err != nil {

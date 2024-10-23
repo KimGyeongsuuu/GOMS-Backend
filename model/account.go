@@ -24,4 +24,5 @@ type AccountRepository interface {
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	FindByEmail(ctx context.Context, email string) (*Account, error)
 	FindByAccountID(ctx context.Context, accountID uint64) (*Account, error)
+	FindAllAccount(ctx context.Context) ([]Account, error)
 }
