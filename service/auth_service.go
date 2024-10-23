@@ -1,7 +1,7 @@
 package service
 
 import (
-	"GOMS-BACKEND-GO/global/jwt"
+	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/constant"
@@ -52,7 +52,7 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 		CreatedAt:  time.Now(),
 	}
 
-	return service.accountRepo.CreateAccount(ctx, account)
+	return service.accountRepo.SaveAccount(ctx, account)
 
 }
 

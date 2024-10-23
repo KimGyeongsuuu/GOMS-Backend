@@ -19,12 +19,13 @@ func NewStudentCouncilController(studentCouncilUseCase model.StudentCouncilUseCa
 
 func (controller *StudentCouncilController) CreateOuting(ctx *gin.Context) {
 
-	newUUID, err := controller.studentCouncilUseCase.CreateOuting(ctx)
+	outingUUID, err := controller.studentCouncilUseCase.CreateOuting(ctx)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"outingUUID": newUUID.String()})
+	ctx.JSON(http.StatusCreated, gin.H{"outingUUID": outingUUID.String()})
 
 }

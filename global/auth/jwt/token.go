@@ -60,6 +60,7 @@ func (adapter *GenerateTokenAdapter) GenerateToken(ctx context.Context, accountI
 func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, authority constant.Authority) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":       accountId,
+		"accountID": accountId,
 		"authority": authority,
 		"exp":       time.Now().Add(time.Duration(adapter.jwtExpTimeProperties.AccessExp) * time.Second).Unix(),
 		"iat":       time.Now().Unix(),
@@ -90,6 +91,6 @@ func (adapter *GenerateTokenAdapter) generateRefreshToken(ctx context.Context, a
 		ExpiredAt:    adapter.jwtExpTimeProperties.RefreshExp,
 	}
 
-	adapter.refreshRepo.CreateRefreshToken(ctx, refreshToken)
+	adapter.refreshRepo.SaveRefreshToken(ctx, refreshToken)
 	return signedToken, nil
 }

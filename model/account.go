@@ -20,7 +20,8 @@ type Account struct {
 }
 
 type AccountRepository interface {
-	CreateAccount(ctx context.Context, account *Account) error
+	SaveAccount(ctx context.Context, account *Account) error
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	FindByEmail(ctx context.Context, email string) (*Account, error)
+	FindByAccountID(ctx context.Context, accountID uint64) (*Account, error)
 }
