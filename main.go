@@ -91,6 +91,7 @@ func main() {
 		studentCouncil.Use(middleware.AuthorizeRoleJWT(jwtProperties.AccessSecret, "ROLE_STUDENT_COUNCIL"))
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
 		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
+		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
 	}
 	outing := r.Group("/api/v1/outing")
 	{

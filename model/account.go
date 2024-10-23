@@ -2,6 +2,7 @@ package model
 
 import (
 	"GOMS-BACKEND-GO/model/data/constant"
+	"GOMS-BACKEND-GO/model/data/input"
 	"context"
 	"time"
 )
@@ -25,4 +26,5 @@ type AccountRepository interface {
 	FindByEmail(ctx context.Context, email string) (*Account, error)
 	FindByAccountID(ctx context.Context, accountID uint64) (*Account, error)
 	FindAllAccount(ctx context.Context) ([]Account, error)
+	FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]Account, error)
 }

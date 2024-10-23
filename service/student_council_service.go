@@ -2,6 +2,7 @@ package service
 
 import (
 	"GOMS-BACKEND-GO/model"
+	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 
@@ -55,5 +56,31 @@ func (service *StudentCouncilService) FindAllAccount(ctx context.Context) ([]out
 
 	}
 
+	return accountOutputs, err
+}
+
+func (service *StudentCouncilService) SearchAccount(ctx context.Context, accountInput *input.SearchAccountInput) ([]output.AccountOutput, error) {
+
+	accounts, err := service.accountRepo.FindByAccountByStudentInfo(ctx, accountInput)
+
+	if err != nil {
+		return nil, err
+	}
+	var accountOutputs []output.AccountOutput
+
+	for _, account := range accounts {
+		accountOutput := output.AccountOutput{
+			AccountID:   account.ID,
+			Name:        account.Name,
+			Major:       account.Major,
+			Grade:       account.Grade,
+			ProfileURL:  account.ProfileURL,
+			Authority:   account.Authority,
+			IsBlackList: false,
+		}
+
+		accountOutputs = append(accountOutputs, accountOutput)
+
+	}
 	return accountOutputs, err
 }
