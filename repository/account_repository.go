@@ -92,3 +92,17 @@ func (repository *AccountRepository) FindByAccountByStudentInfo(ctx context.Cont
 
 	return accounts, nil
 }
+
+func (repository *AccountRepository) UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error {
+	result := repository.db.WithContext(ctx).
+		Model(&model.Account{}).
+		Where("id = ?", authorityInput.AccountID).
+		Update("authority", authorityInput.Authority)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+
+}

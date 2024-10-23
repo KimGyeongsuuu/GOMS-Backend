@@ -27,4 +27,5 @@ type AccountRepository interface {
 	FindByAccountID(ctx context.Context, accountID uint64) (*Account, error)
 	FindAllAccount(ctx context.Context) ([]Account, error)
 	FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]Account, error)
+	UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error
 }

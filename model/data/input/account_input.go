@@ -10,3 +10,8 @@ type SearchAccountInput struct {
 	IsBlackList *bool
 	Major       *constant.Major
 }
+
+type UpdateAccountAuthorityInput struct {
+	AccountID uint64
+	Authority constant.Authority
+}

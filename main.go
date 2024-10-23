@@ -92,6 +92,7 @@ func main() {
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
 		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
 		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
+		studentCouncil.PATCH("authority", studentCouncilController.UpdateAuthority)
 	}
 	outing := r.Group("/api/v1/outing")
 	{

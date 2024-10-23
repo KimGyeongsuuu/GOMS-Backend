@@ -12,6 +12,7 @@ type StudentCouncilUseCase interface {
 	CreateOuting(ctx context.Context) (uuid.UUID, error)
 	FindAllAccount(ctx context.Context) ([]output.AccountOutput, error)
 	SearchAccount(ctx context.Context, accountInput *input.SearchAccountInput) ([]output.AccountOutput, error)
+	UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error
 }
 
 type OutingUUIDRepository interface {

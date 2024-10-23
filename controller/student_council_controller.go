@@ -96,3 +96,21 @@ func (controller *StudentCouncilController) SearchAccountByInfo(ctx *gin.Context
 	}
 	ctx.JSON(http.StatusOK, gin.H{"accounts": accounts})
 }
+
+func (controller *StudentCouncilController) UpdateAuthority(ctx *gin.Context) {
+	var input input.UpdateAccountAuthorityInput
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := controller.studentCouncilUseCase.UpdateAccountAuthority(ctx, &input)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
