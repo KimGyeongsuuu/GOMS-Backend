@@ -73,7 +73,7 @@ func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []by
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized1"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "not valid access token"})
 			c.Abort()
 			return
 		}
@@ -86,7 +86,7 @@ func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []by
 		}
 		accountID, ok := claims["accountID"].(float64)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized3"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "not found account id in claims"})
 			c.Abort()
 			return
 		}

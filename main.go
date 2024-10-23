@@ -39,7 +39,6 @@ func main() {
 	outingProperties, err := config.LoadOutingProperties()
 	if err != nil {
 		log.Fatal("Failed to load Outing properties:", err)
-
 	}
 
 	db, err := setupDatabase()
@@ -47,7 +46,7 @@ func main() {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	err = db.AutoMigrate(&model.Account{}, &model.RefreshToken{}, &model.Outing{})
+	err = db.AutoMigrate(&model.Account{}, &model.Outing{})
 	if err != nil {
 		log.Fatal("Failed to migrate tables:", err)
 	}
@@ -95,6 +94,7 @@ func main() {
 	outing := r.Group("/api/v1/outing")
 	{
 		outing.POST("/:outingUUID", outingController.OutingStudent)
+		outing.GET("", outingController.ListOutingStudent)
 	}
 
 	if err := r.Run(":8080"); err != nil {
