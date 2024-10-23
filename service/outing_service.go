@@ -107,3 +107,36 @@ func (service *OutingService) CountAllOutingStudent(ctx context.Context) (int, e
 	return len(outings), err
 
 }
+
+func (service *OutingService) SearchOutingStudent(ctx context.Context, name string) ([]output.OutingStudentOutput, error) {
+	outings, err := service.outingRepo.FindByAccountNameContaining(ctx, name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var outingStudentOutputs []output.OutingStudentOutput
+
+	for _, outing := range outings {
+		account, err := service.accountRepo.FindByAccountID(ctx, outing.AccountID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		outingStudentOutput := output.OutingStudentOutput{
+			AccountID:   account.ID,
+			Name:        account.Name,
+			Grade:       account.Grade,
+			Major:       account.Major,
+			Gender:      account.Gender,
+			ProfileURL:  account.ProfileURL,
+			CreatedTime: outing.CreatedAt,
+		}
+
+		outingStudentOutputs = append(outingStudentOutputs, outingStudentOutput)
+	}
+
+	return outingStudentOutputs, nil
+
+}

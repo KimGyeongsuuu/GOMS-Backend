@@ -96,6 +96,7 @@ func main() {
 		outing.POST("/:outingUUID", outingController.OutingStudent)
 		outing.GET("", outingController.ListOutingStudent)
 		outing.GET("/count", outingController.CountOutingStudent)
+		outing.GET("/search", outingController.SearchOutingStudent)
 	}
 
 	if err := r.Run(":8080"); err != nil {
