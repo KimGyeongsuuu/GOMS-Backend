@@ -97,3 +97,13 @@ func (service *OutingService) FindAllOutingStudent(ctx context.Context) ([]outpu
 
 	return outingStudentOutputs, nil
 }
+
+func (service *OutingService) CountAllOutingStudent(ctx context.Context) (int, error) {
+	outings, err := service.outingRepo.FindAllOuting(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(outings), err
+
+}

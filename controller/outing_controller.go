@@ -49,3 +49,13 @@ func (controller *OutingController) ListOutingStudent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"outing-students": outings})
 
 }
+
+func (controller *OutingController) CountOutingStudent(ctx *gin.Context) {
+	outingsCount, err := controller.outingUseCase.CountAllOutingStudent(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count Outing student"})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"outing-students-count": outingsCount})
+
+}
