@@ -2,8 +2,9 @@ package main
 
 import (
 	"GOMS-BACKEND-GO/controller"
+	"GOMS-BACKEND-GO/global/auth/jwt"
+	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
-	"GOMS-BACKEND-GO/global/jwt"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
 	"GOMS-BACKEND-GO/service"
@@ -46,7 +47,7 @@ func main() {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	err = db.AutoMigrate(&model.Account{}, &model.RefreshToken{})
+	err = db.AutoMigrate(&model.Account{}, &model.RefreshToken{}, &model.Outing{})
 	if err != nil {
 		log.Fatal("Failed to migrate tables:", err)
 	}
@@ -66,6 +67,12 @@ func main() {
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo)
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 
+	outingRepo := repository.NewOutingRepository(db)
+	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
+	outingController := controller.NewOutingController(outingUseCase)
+
+	r.Use(middleware.AccountMiddleware(accountRepo, jwtProperties.AccessSecret))
+
 	health := r.Group("/health")
 	{
 		health.GET("", func(c *gin.Context) {
@@ -82,8 +89,12 @@ func main() {
 	}
 	studentCouncil := r.Group("/api/v1/student-council")
 	{
-		studentCouncil.Use(jwt.AuthorizeRoleJWT(jwtProperties.AccessSecret, "ROLE_STUDENT_COUNCIL"))
+		studentCouncil.Use(middleware.AuthorizeRoleJWT(jwtProperties.AccessSecret, "ROLE_STUDENT_COUNCIL"))
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
+	}
+	outing := r.Group("/api/v1/outing")
+	{
+		outing.POST("/:outingUUID", outingController.OutingStudent)
 	}
 
 	if err := r.Run(":8080"); err != nil {

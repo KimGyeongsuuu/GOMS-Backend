@@ -19,10 +19,10 @@ func NewStudentCouncilService(outingUUIDRepo model.OutingUUIDRepository) model.S
 
 func (service *StudentCouncilService) CreateOuting(ctx context.Context) (uuid.UUID, error) {
 
-	newUUID, err := service.outingUUIDRepo.CreateOutingUUID(ctx)
+	outingUUID, err := service.outingUUIDRepo.CreateOutingUUID(ctx)
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
-	return newUUID, nil
+	return outingUUID, nil
 }

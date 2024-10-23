@@ -12,4 +12,5 @@ type StudentCouncilUseCase interface {
 
 type OutingUUIDRepository interface {
 	CreateOutingUUID(ctx context.Context) (uuid.UUID, error)
+	ExistsByOutingUUID(ctx context.Context, outingUUID uuid.UUID) (bool, error)
 }

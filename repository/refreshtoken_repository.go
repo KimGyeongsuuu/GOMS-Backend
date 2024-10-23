@@ -19,7 +19,7 @@ func NewRefreshTokenRepository(rdb *redis.Client) *RefreshTokenRepository {
 	}
 }
 
-func (repository *RefreshTokenRepository) CreateRefreshToken(ctx context.Context, refreshToken *model.RefreshToken) error {
+func (repository *RefreshTokenRepository) SaveRefreshToken(ctx context.Context, refreshToken *model.RefreshToken) error {
 
 	tokenJSON, err := json.Marshal(refreshToken)
 	if err != nil {

@@ -18,5 +18,5 @@ type AuthUseCase interface {
 }
 
 type RefreshTokenRepository interface {
-	CreateRefreshToken(ctx context.Context, refreshToken *RefreshToken) error
+	SaveRefreshToken(ctx context.Context, refreshToken *RefreshToken) error
 }
