@@ -57,6 +57,7 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 }
 
 func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput) (output.TokenOutput, error) {
+
 	account, err := service.accountRepo.FindByEmail(ctx, input.Email)
 
 	if err != nil {

@@ -84,3 +84,15 @@ func (service *StudentCouncilService) SearchAccount(ctx context.Context, account
 	}
 	return accountOutputs, err
 }
+
+func (service *StudentCouncilService) UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error {
+
+	err := service.accountRepo.UpdateAccountAuthority(ctx, authorityInput)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
