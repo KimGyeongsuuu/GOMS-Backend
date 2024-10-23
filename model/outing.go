@@ -18,6 +18,7 @@ type Outing struct {
 type OutingUseCase interface {
 	OutingStudent(c *gin.Context, ctx context.Context, outingUUID uuid.UUID) error
 	FindAllOutingStudent(ctx context.Context) ([]output.OutingStudentOutput, error)
+	CountAllOutingStudent(ctx context.Context) (int, error)
 }
 
 type OutingRepository interface {
