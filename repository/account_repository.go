@@ -2,6 +2,7 @@ package repository
 
 import (
 	"GOMS-BACKEND-GO/model"
+	"GOMS-BACKEND-GO/model/data/input"
 	"context"
 
 	"gorm.io/gorm"
@@ -59,4 +60,35 @@ func (repository *AccountRepository) FindAllAccount(ctx context.Context) ([]mode
 	result := repository.db.WithContext(ctx).Find(&accounts)
 
 	return accounts, result.Error
+}
+
+func (repository *AccountRepository) FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]model.Account, error) {
+	var accounts []model.Account
+	query := repository.db.WithContext(ctx).Model(&model.Account{})
+
+	if searchAccountInput.Grade != nil {
+		query = query.Where("grade = ?", *searchAccountInput.Grade)
+	}
+	if searchAccountInput.Gender != nil {
+		query = query.Where("gender = ?", *searchAccountInput.Gender)
+	}
+	if searchAccountInput.Name != nil {
+		query = query.Where("name LIKE ?", "%"+*searchAccountInput.Name+"%")
+	}
+	if searchAccountInput.Authority != nil {
+		query = query.Where("authority = ?", *searchAccountInput.Authority)
+	}
+	if searchAccountInput.Major != nil {
+		query = query.Where("major = ?", *searchAccountInput.Major)
+	}
+
+	query = query.Order("grade ASC")
+
+	result := query.Find(&accounts)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accounts, nil
 }

@@ -54,7 +54,7 @@ func (repository *OutingRepository) FindAllOuting(ctx context.Context) ([]model.
 	return outings, nil
 }
 
-func (repository *OutingRepository) FindByAccountNameContaining(ctx context.Context, name string) ([]model.Outing, error) {
+func (repository *OutingRepository) FindByOutingAccountNameContaining(ctx context.Context, name string) ([]model.Outing, error) {
 	var outings []model.Outing
 	result := repository.db.WithContext(ctx).
 		Preload("Account").

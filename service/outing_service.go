@@ -109,7 +109,7 @@ func (service *OutingService) CountAllOutingStudent(ctx context.Context) (int, e
 }
 
 func (service *OutingService) SearchOutingStudent(ctx context.Context, name string) ([]output.OutingStudentOutput, error) {
-	outings, err := service.outingRepo.FindByAccountNameContaining(ctx, name)
+	outings, err := service.outingRepo.FindByOutingAccountNameContaining(ctx, name)
 
 	if err != nil {
 		return nil, err

@@ -27,5 +27,5 @@ type OutingRepository interface {
 	ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error)
 	DeleteOutingByAccountID(ctx context.Context, accountID uint64) error
 	FindAllOuting(ctx context.Context) ([]Outing, error)
-	FindByAccountNameContaining(ctx context.Context, name string) ([]Outing, error)
+	FindByOutingAccountNameContaining(ctx context.Context, name string) ([]Outing, error)
 }

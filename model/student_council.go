@@ -1,6 +1,7 @@
 package model
 
 import (
+	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 
@@ -10,6 +11,7 @@ import (
 type StudentCouncilUseCase interface {
 	CreateOuting(ctx context.Context) (uuid.UUID, error)
 	FindAllAccount(ctx context.Context) ([]output.AccountOutput, error)
+	SearchAccount(ctx context.Context, accountInput *input.SearchAccountInput) ([]output.AccountOutput, error)
 }
 
 type OutingUUIDRepository interface {
