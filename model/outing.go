@@ -19,6 +19,7 @@ type OutingUseCase interface {
 	OutingStudent(c *gin.Context, ctx context.Context, outingUUID uuid.UUID) error
 	FindAllOutingStudent(ctx context.Context) ([]output.OutingStudentOutput, error)
 	CountAllOutingStudent(ctx context.Context) (int, error)
+	SearchOutingStudent(ctx context.Context, name string) ([]output.OutingStudentOutput, error)
 }
 
 type OutingRepository interface {
@@ -26,4 +27,5 @@ type OutingRepository interface {
 	ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error)
 	DeleteOutingByAccountID(ctx context.Context, accountID uint64) error
 	FindAllOuting(ctx context.Context) ([]Outing, error)
+	FindByAccountNameContaining(ctx context.Context, name string) ([]Outing, error)
 }

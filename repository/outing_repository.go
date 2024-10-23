@@ -53,3 +53,22 @@ func (repository *OutingRepository) FindAllOuting(ctx context.Context) ([]model.
 
 	return outings, nil
 }
+
+func (repository *OutingRepository) FindByAccountNameContaining(ctx context.Context, name string) ([]model.Outing, error) {
+	var outings []model.Outing
+	result := repository.db.WithContext(ctx).
+		Preload("Account").
+		Joins("JOIN accounts ON accounts.id = outings.account_id").
+		Where("accounts.name LIKE ?", "%"+name+"%").
+		Find(&outings)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if len(outings) == 0 {
+		return nil, errors.New("not found account")
+	}
+
+	return outings, nil
+}
