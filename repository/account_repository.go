@@ -53,3 +53,10 @@ func (repository *AccountRepository) FindByAccountID(ctx context.Context, accoun
 	}
 	return &account, nil
 }
+
+func (repository *AccountRepository) FindAllAccount(ctx context.Context) ([]model.Account, error) {
+	var accounts []model.Account
+	result := repository.db.WithContext(ctx).Find(&accounts)
+
+	return accounts, result.Error
+}
