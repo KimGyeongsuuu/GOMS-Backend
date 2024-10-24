@@ -54,3 +54,15 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"TokenOutput": token})
 }
+
+func (controller *AuthController) TokenReissue(ctx *gin.Context) {
+	refreshToken := ctx.GetHeader("RefreshToken")
+
+	token, err := controller.authUseCase.TokenReissue(context.Background(), refreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "token reissue error"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"TokenOutput": token})
+}

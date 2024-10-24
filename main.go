@@ -60,6 +60,7 @@ func main() {
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
 	tokenAdapter := jwt.NewGenerateTokenAdapter(jwtProperties, jwtExpTimeProperties, rdb, refreshRepo)
+	tokenParser := jwt.NewTokenParser()
 
 	r := gin.Default()
 
@@ -68,7 +69,7 @@ func main() {
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
 	outingRepo := repository.NewOutingRepository(db)
 
-	authUseCase := service.NewAuthService(accountRepo, tokenAdapter)
+	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo)
 
@@ -90,6 +91,7 @@ func main() {
 	{
 		auth.POST("signup", authController.SignUp)
 		auth.POST("signin", authController.SignIn)
+		auth.PATCH("", authController.TokenReissue)
 
 	}
 	studentCouncil := r.Group("/api/v1/student-council")
