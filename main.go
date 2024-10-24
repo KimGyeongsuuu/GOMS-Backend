@@ -64,18 +64,17 @@ func main() {
 	r := gin.Default()
 
 	accountRepo := repository.NewAccountRepository(db)
-	authUseCase := service.NewAuthService(accountRepo, tokenAdapter)
-	authController := controller.NewAuthController(authUseCase)
-
 	blackListRepo := repository.NewBlackListRepository(rdb)
-
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties)
-	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
-
 	outingRepo := repository.NewOutingRepository(db)
+
+	authUseCase := service.NewAuthService(accountRepo, tokenAdapter)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo)
+
+	authController := controller.NewAuthController(authUseCase)
 	outingController := controller.NewOutingController(outingUseCase)
+	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 
 	r.Use(middleware.AccountMiddleware(accountRepo, jwtProperties.AccessSecret))
 
@@ -102,6 +101,7 @@ func main() {
 		studentCouncil.PATCH("authority", studentCouncilController.UpdateAuthority)
 		studentCouncil.POST("black-list/:accountID", studentCouncilController.AddBlackList)
 		studentCouncil.DELETE("black-list/:accountID", studentCouncilController.DeleteBlackList)
+		studentCouncil.DELETE("outing/:accountID", studentCouncilController.DeleteOutingStudent)
 	}
 	outing := r.Group("/api/v1/outing")
 	{

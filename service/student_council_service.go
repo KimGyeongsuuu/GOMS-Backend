@@ -17,14 +17,16 @@ type StudentCouncilService struct {
 	accountRepo               model.AccountRepository
 	blackListRepo             model.BlackListRepository
 	outingBlackListProperties *config.OutingBlackListProperties
+	outingRepo                model.OutingRepository
 }
 
-func NewStudentCouncilService(outingUUIDRepo model.OutingUUIDRepository, accountRepo model.AccountRepository, blackListRepo model.BlackListRepository, outingBlackListProperties *config.OutingBlackListProperties) model.StudentCouncilUseCase {
+func NewStudentCouncilService(outingUUIDRepo model.OutingUUIDRepository, accountRepo model.AccountRepository, blackListRepo model.BlackListRepository, outingBlackListProperties *config.OutingBlackListProperties, outingRepo model.OutingRepository) model.StudentCouncilUseCase {
 	return &StudentCouncilService{
 		outingUUIDRepo:            outingUUIDRepo,
 		accountRepo:               accountRepo,
 		blackListRepo:             blackListRepo,
 		outingBlackListProperties: outingBlackListProperties,
+		outingRepo:                outingRepo,
 	}
 }
 
@@ -119,7 +121,6 @@ func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountI
 func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, accountID uint64) error {
 	outingBlackList, err := service.blackListRepo.FindBlackListByAccountID(ctx, accountID)
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil
 	}
 	if outingBlackList == nil {
@@ -128,4 +129,22 @@ func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, acco
 
 	service.blackListRepo.DeleteBlackList(ctx, outingBlackList)
 	return nil
+}
+
+func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, accountID uint64) error {
+	exists, err := service.outingRepo.ExistsOutingByAccountID(ctx, accountID)
+	if err != nil {
+		return nil
+	}
+	if !exists {
+		return fmt.Errorf("not outing student")
+	}
+
+	deleteErr := service.outingRepo.DeleteOutingByAccountID(ctx, accountID)
+	if deleteErr != nil {
+		return nil
+	}
+
+	return nil
+
 }

@@ -15,14 +15,14 @@ import (
 type OutingService struct {
 	outingRepo     model.OutingRepository
 	accountRepo    model.AccountRepository
-	outingUUidRepo model.OutingUUIDRepository
+	outingUUIDRepo model.OutingUUIDRepository
 }
 
 func NewOutingService(outingRepo model.OutingRepository, accountRepo model.AccountRepository, outingUUIDRepo model.OutingUUIDRepository) *OutingService {
 	return &OutingService{
 		outingRepo:     outingRepo,
 		accountRepo:    accountRepo,
-		outingUUidRepo: outingUUIDRepo,
+		outingUUIDRepo: outingUUIDRepo,
 	}
 }
 
@@ -33,7 +33,7 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 	}
 
 	// 유효한 외출 UUID 인지 검증
-	existsOutingUUID, err := service.outingUUidRepo.ExistsByOutingUUID(ctx, outingUUID)
+	existsOutingUUID, err := service.outingUUIDRepo.ExistsByOutingUUID(ctx, outingUUID)
 
 	if err != nil {
 		return errors.New("failed to outing UUID")

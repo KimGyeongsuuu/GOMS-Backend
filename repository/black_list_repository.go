@@ -52,7 +52,6 @@ func (repository *BlackListRepository) FindBlackListByAccountID(ctx context.Cont
 		return nil, fmt.Errorf("failed to get value from Redis: %v", err)
 	}
 
-	fmt.Printf("Retrieved JSON: %s\n", blackListJson)
 	var blackList model.BlackList
 	err = json.Unmarshal([]byte(blackListJson), &blackList)
 	if err != nil {
