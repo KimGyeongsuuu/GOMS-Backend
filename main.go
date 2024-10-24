@@ -101,6 +101,7 @@ func main() {
 		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
 		studentCouncil.PATCH("authority", studentCouncilController.UpdateAuthority)
 		studentCouncil.POST("black-list/:accountID", studentCouncilController.AddBlackList)
+		studentCouncil.DELETE("black-list/:accountID", studentCouncilController.DeleteBlackList)
 	}
 	outing := r.Group("/api/v1/outing")
 	{

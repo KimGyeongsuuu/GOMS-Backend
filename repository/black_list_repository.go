@@ -22,10 +22,9 @@ func NewBlackListRepository(rdb *redis.Client) *BlackListRepository {
 }
 
 func (repository *BlackListRepository) SaveBlackList(ctx context.Context, blackList *model.BlackList) error {
-
 	key := "blacklist:" + strconv.FormatUint(blackList.AccountID, 10)
 
-	blackListJson, err := json.Marshal(blackList.AccountID)
+	blackListJson, err := json.Marshal(blackList)
 	if err != nil {
 		return fmt.Errorf("failed to marshal blackList: %v", err)
 	}
@@ -39,6 +38,38 @@ func (repository *BlackListRepository) SaveBlackList(ctx context.Context, blackL
 		return fmt.Errorf("failed to set value in Redis: %v", err)
 	}
 
+	return nil
+}
+
+func (repository *BlackListRepository) FindBlackListByAccountID(ctx context.Context, accountID uint64) (*model.BlackList, error) {
+	key := "blacklist:" + strconv.FormatUint(accountID, 10)
+
+	blackListJson, err := repository.rdb.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get value from Redis: %v", err)
+	}
+
+	fmt.Printf("Retrieved JSON: %s\n", blackListJson)
+	var blackList model.BlackList
+	err = json.Unmarshal([]byte(blackListJson), &blackList)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal blackList: %v", err)
+	}
+
+	return &blackList, nil
+}
+func (repository *BlackListRepository) DeleteBlackList(ctx context.Context, blackList *model.BlackList) error {
+	key := "blacklist:" + strconv.FormatUint(blackList.AccountID, 10)
+
+	err := repository.rdb.Del(ctx, key).Err()
+	if err != nil {
+		return fmt.Errorf("failed to delete value from Redis: %v", err)
+	}
+
+	fmt.Printf("Deleted Key: %s\n", key)
 	return nil
 
 }
