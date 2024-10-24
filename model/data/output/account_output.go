@@ -12,3 +12,12 @@ type AccountOutput struct {
 	Authority   constant.Authority
 	IsBlackList bool
 }
+
+type LateTop3Output struct {
+	AccountID  uint64
+	Name       string
+	Major      constant.Major
+	Grade      int
+	Gender     constant.Gender
+	ProfileURL *string
+}
