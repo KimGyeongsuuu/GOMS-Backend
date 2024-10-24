@@ -8,5 +8,7 @@ type BlackList struct {
 }
 
 type BlackListRepository interface {
-	SaveBlackList(ctx context.Context, BlackList *BlackList) error
+	SaveBlackList(ctx context.Context, blackList *BlackList) error
+	DeleteBlackList(ctx context.Context, blackList *BlackList) error
+	FindBlackListByAccountID(ctx context.Context, accountID uint64) (*BlackList, error)
 }

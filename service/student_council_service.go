@@ -111,11 +111,21 @@ func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountI
 		AccountID: accountID,
 		ExpiredAt: int64(expiration.Seconds()),
 	}
-	fmt.Println("-------------in student council service-----------------")
-	fmt.Println(blackList.AccountID)
-	fmt.Println(blackList.ExpiredAt)
-	fmt.Println("-------------in student council service-----------------")
 	service.blackListRepo.SaveBlackList(ctx, blackList)
 
+	return nil
+}
+
+func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, accountID uint64) error {
+	outingBlackList, err := service.blackListRepo.FindBlackListByAccountID(ctx, accountID)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil
+	}
+	if outingBlackList == nil {
+		return fmt.Errorf("blacklist not found for account ID: %d", accountID) // 블랙리스트가 없을 경우 오류 반환
+	}
+
+	service.blackListRepo.DeleteBlackList(ctx, outingBlackList)
 	return nil
 }
