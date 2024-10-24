@@ -9,18 +9,28 @@ import (
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 )
 
 type AuthService struct {
-	accountRepo  model.AccountRepository
-	tokenAdapter *jwt.GenerateTokenAdapter
+	accountRepo      model.AccountRepository
+	tokenAdapter     *jwt.GenerateTokenAdapter
+	tokenParser      *jwt.TokenParser
+	refreshTokenRepo model.RefreshTokenRepository
 }
 
-func NewAuthService(accountRepo model.AccountRepository, tokenAdapter *jwt.GenerateTokenAdapter) model.AuthUseCase {
+func NewAuthService(
+	accountRepo model.AccountRepository,
+	tokenAdapter *jwt.GenerateTokenAdapter,
+	refreshTokenRepo model.RefreshTokenRepository,
+	tokenParser *jwt.TokenParser,
+) model.AuthUseCase {
 	return &AuthService{
-		accountRepo:  accountRepo,
-		tokenAdapter: tokenAdapter,
+		accountRepo:      accountRepo,
+		tokenAdapter:     tokenAdapter,
+		refreshTokenRepo: refreshTokenRepo,
+		tokenParser:      tokenParser,
 	}
 }
 
@@ -83,6 +93,39 @@ func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput
 		return output.TokenOutput{}, err
 	}
 
+	return tokenOutput, nil
+
+}
+
+func (service *AuthService) TokenReissue(ctx context.Context, refreshToken string) (output.TokenOutput, error) {
+	parsedRefreshToken, err := service.tokenParser.ParseRefreshToken(refreshToken)
+	if err != nil {
+		return output.TokenOutput{}, fmt.Errorf("request header refresh token is error")
+	}
+
+	refreshTokenDomain, err := service.refreshTokenRepo.FindRefreshTokenByRefreshToken(ctx, parsedRefreshToken)
+	if err != nil {
+		return output.TokenOutput{}, fmt.Errorf("find refresh token by refresh token method is eror")
+	}
+
+	if service.accountRepo == nil {
+		return output.TokenOutput{}, fmt.Errorf("accountRepo is not initialized")
+	}
+	fmt.Println("dddd")
+
+	if refreshTokenDomain.AccountID == 0 {
+		return output.TokenOutput{}, fmt.Errorf("invalid AccountID in refresh token")
+	}
+
+	accountDomain, err := service.accountRepo.FindByAccountID(ctx, refreshTokenDomain.AccountID)
+	if err != nil {
+		return output.TokenOutput{}, err
+	}
+	tokenOutput, err := service.tokenAdapter.GenerateToken(ctx, accountDomain.ID, accountDomain.Authority)
+	if err != nil {
+		return output.TokenOutput{}, err
+	}
+	service.refreshTokenRepo.DeleteRefreshToken(ctx, refreshTokenDomain)
 	return tokenOutput, nil
 
 }

@@ -124,7 +124,7 @@ func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, acco
 		return nil
 	}
 	if outingBlackList == nil {
-		return fmt.Errorf("blacklist not found for account ID: %d", accountID) // 블랙리스트가 없을 경우 오류 반환
+		return fmt.Errorf("blacklist not found for account ID: %d", accountID)
 	}
 
 	service.blackListRepo.DeleteBlackList(ctx, outingBlackList)
