@@ -4,6 +4,7 @@ import (
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/constant"
 	"GOMS-BACKEND-GO/model/data/input"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -107,6 +108,26 @@ func (controller *StudentCouncilController) UpdateAuthority(ctx *gin.Context) {
 
 	err := controller.studentCouncilUseCase.UpdateAccountAuthority(ctx, &input)
 
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+func (controller *StudentCouncilController) AddBlackList(ctx *gin.Context) {
+	accountIDParam := ctx.Param("accountID")
+
+	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid accountID"})
+		return
+	}
+
+	fmt.Println(accountID)
+	err = controller.studentCouncilUseCase.AddBlackList(ctx, accountID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
