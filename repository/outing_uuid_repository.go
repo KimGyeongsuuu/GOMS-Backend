@@ -35,7 +35,9 @@ func (repository *OutingUUIDRepository) CreateOutingUUID(ctx context.Context) (u
 
 	fmt.Printf("Storing Key: %s, Value: %v\n", key, value)
 
-	err := repository.rdb.Set(ctx, key, value, 300*time.Second).Err()
+	expiration := time.Duration(repository.outingProperties.OutingExp) * time.Second
+
+	err := repository.rdb.Set(ctx, key, value, expiration).Err()
 	if err != nil {
 		return uuid.UUID{}, err
 	}

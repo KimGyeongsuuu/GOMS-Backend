@@ -13,6 +13,7 @@ type StudentCouncilUseCase interface {
 	FindAllAccount(ctx context.Context) ([]output.AccountOutput, error)
 	SearchAccount(ctx context.Context, accountInput *input.SearchAccountInput) ([]output.AccountOutput, error)
 	UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error
+	AddBlackList(ctx context.Context, accountID uint64) error
 }
 
 type OutingUUIDRepository interface {

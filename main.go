@@ -41,6 +41,11 @@ func main() {
 		log.Fatal("Failed to load Outing properties:", err)
 	}
 
+	outingBlackListProperties, err := config.LoadOutingBlackListProperties()
+	if err != nil {
+		log.Fatal("Failed to load Outing black list properties:", err)
+	}
+
 	db, err := setupDatabase()
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
@@ -62,8 +67,10 @@ func main() {
 	authUseCase := service.NewAuthService(accountRepo, tokenAdapter)
 	authController := controller.NewAuthController(authUseCase)
 
+	blackListRepo := repository.NewBlackListRepository(rdb)
+
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties)
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 
 	outingRepo := repository.NewOutingRepository(db)
@@ -93,6 +100,7 @@ func main() {
 		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
 		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
 		studentCouncil.PATCH("authority", studentCouncilController.UpdateAuthority)
+		studentCouncil.POST("black-list/:accountID", studentCouncilController.AddBlackList)
 	}
 	outing := r.Group("/api/v1/outing")
 	{
