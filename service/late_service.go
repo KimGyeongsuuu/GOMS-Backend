@@ -17,7 +17,7 @@ func NewLateService(lateRepo model.LateRepository) *LateService {
 	}
 }
 
-func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.LateTop3Output, error) {
+func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.LateOutput, error) {
 	lates, err := service.lateRepo.FindTop3ByOrderByAccountDesc(ctx)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 
 	fmt.Printf("Fetched lates not if: %+v\n", lates)
 
-	var outputList []output.LateTop3Output
+	var outputList []output.LateOutput
 	fmt.Println(len(lates))
 	for _, late := range lates {
 		if late.Account == nil {
@@ -33,7 +33,7 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 			return nil, fmt.Errorf("late.Account is nil for late ID: %d", late.Account.ID)
 		}
 
-		output := output.LateTop3Output{
+		output := output.LateOutput{
 			AccountID:  late.Account.ID,
 			Name:       late.Account.Name,
 			Major:      late.Account.Major,

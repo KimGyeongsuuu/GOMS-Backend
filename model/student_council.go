@@ -4,6 +4,7 @@ import (
 	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +17,7 @@ type StudentCouncilUseCase interface {
 	AddBlackList(ctx context.Context, accountID uint64) error
 	ExcludeBlackList(ctx context.Context, accountID uint64) error
 	DeleteOutingStudent(ctx context.Context, accountID uint64) error
+	FindLateStudentByDate(ctx context.Context, date time.Time) ([]output.LateOutput, error)
 }
 
 type OutingUUIDRepository interface {
