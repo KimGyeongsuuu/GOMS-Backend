@@ -13,7 +13,7 @@ type AccountOutput struct {
 	IsBlackList bool
 }
 
-type LateTop3Output struct {
+type LateOutput struct {
 	AccountID  uint64
 	Name       string
 	Major      constant.Major

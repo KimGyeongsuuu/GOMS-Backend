@@ -6,6 +6,7 @@ import (
 	"GOMS-BACKEND-GO/model/data/input"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -169,4 +170,22 @@ func (controller *StudentCouncilController) DeleteOutingStudent(ctx *gin.Context
 	}
 
 	ctx.Status(http.StatusNoContent)
+}
+
+func (controller *StudentCouncilController) FindLateList(ctx *gin.Context) {
+	dateStr := ctx.Query("date")
+
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD."})
+		return
+	}
+
+	lateStudents, err := controller.studentCouncilUseCase.FindLateStudentByDate(ctx, date)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch late students."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"late-stduents": lateStudents})
 }

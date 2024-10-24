@@ -13,9 +13,10 @@ type Late struct {
 	CreatedAt time.Time
 }
 type LateUseCase interface {
-	GetTop3LateStudent(ctx context.Context) ([]output.LateTop3Output, error)
+	GetTop3LateStudent(ctx context.Context) ([]output.LateOutput, error)
 }
 
 type LateRepository interface {
 	FindTop3ByOrderByAccountDesc(ctx context.Context) ([]Late, error)
+	FindLateByCreatedAt(ctx context.Context, date time.Time) ([]Late, error)
 }

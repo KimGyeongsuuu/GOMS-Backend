@@ -4,6 +4,7 @@ import (
 	"GOMS-BACKEND-GO/model"
 	"context"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -33,6 +34,24 @@ func (repository *LateRepository) FindTop3ByOrderByAccountDesc(ctx context.Conte
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch top 3 lates: %w", err)
+	}
+
+	return lates, nil
+}
+
+func (repository *LateRepository) FindLateByCreatedAt(ctx context.Context, date time.Time) ([]model.Late, error) {
+	var lates []model.Late
+
+	startOfDay := date.Truncate(24 * time.Hour)
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
+	err := repository.db.WithContext(ctx).
+		Preload("Account").
+		Where("created_at >= ? AND created_at < ?", startOfDay, endOfDay).
+		Find(&lates).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch late students: %w", err)
 	}
 
 	return lates, nil

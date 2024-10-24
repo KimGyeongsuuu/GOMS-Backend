@@ -92,7 +92,7 @@ func main() {
 	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	lateUseCase := service.NewLateService(lateRepo)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo, lateRepo)
 
 	authController := controller.NewAuthController(authUseCase)
 	outingController := controller.NewOutingController(outingUseCase)
@@ -126,6 +126,7 @@ func main() {
 		studentCouncil.POST("black-list/:accountID", studentCouncilController.AddBlackList)
 		studentCouncil.DELETE("black-list/:accountID", studentCouncilController.DeleteBlackList)
 		studentCouncil.DELETE("outing/:accountID", studentCouncilController.DeleteOutingStudent)
+		studentCouncil.GET("late", studentCouncilController.FindLateList)
 	}
 	outing := r.Group("/api/v1/outing")
 	{

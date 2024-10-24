@@ -18,15 +18,24 @@ type StudentCouncilService struct {
 	blackListRepo             model.BlackListRepository
 	outingBlackListProperties *config.OutingBlackListProperties
 	outingRepo                model.OutingRepository
+	lateRepo                  model.LateRepository
 }
 
-func NewStudentCouncilService(outingUUIDRepo model.OutingUUIDRepository, accountRepo model.AccountRepository, blackListRepo model.BlackListRepository, outingBlackListProperties *config.OutingBlackListProperties, outingRepo model.OutingRepository) model.StudentCouncilUseCase {
+func NewStudentCouncilService(
+	outingUUIDRepo model.OutingUUIDRepository,
+	accountRepo model.AccountRepository,
+	blackListRepo model.BlackListRepository,
+	outingBlackListProperties *config.OutingBlackListProperties,
+	outingRepo model.OutingRepository,
+	lateRepo model.LateRepository,
+) model.StudentCouncilUseCase {
 	return &StudentCouncilService{
 		outingUUIDRepo:            outingUUIDRepo,
 		accountRepo:               accountRepo,
 		blackListRepo:             blackListRepo,
 		outingBlackListProperties: outingBlackListProperties,
 		outingRepo:                outingRepo,
+		lateRepo:                  lateRepo,
 	}
 }
 
@@ -146,5 +155,28 @@ func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, a
 	}
 
 	return nil
+
+}
+
+func (service *StudentCouncilService) FindLateStudentByDate(ctx context.Context, date time.Time) ([]output.LateOutput, error) {
+	lates, err := service.lateRepo.FindLateByCreatedAt(ctx, date)
+	if err != nil {
+		return []output.LateOutput{}, nil
+	}
+
+	var outputList []output.LateOutput
+	for _, late := range lates {
+		outputItem := output.LateOutput{
+			AccountID:  late.Account.ID,
+			Name:       late.Account.Name,
+			Major:      late.Account.Major,
+			Grade:      late.Account.Grade,
+			Gender:     late.Account.Gender,
+			ProfileURL: late.Account.ProfileURL,
+		}
+		outputList = append(outputList, outputItem)
+	}
+
+	return outputList, nil
 
 }
