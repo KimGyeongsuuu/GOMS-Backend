@@ -51,10 +51,29 @@ func main() {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	err = db.AutoMigrate(&model.Account{}, &model.Outing{})
+	err = db.AutoMigrate(&model.Account{}, &model.Outing{}, &model.Late{})
 	if err != nil {
 		log.Fatal("Failed to migrate tables:", err)
 	}
+
+	// accountDomain := model.Account{
+	// 	Email:     "example@example.com",
+	// 	Password:  "password123",
+	// 	Grade:     1,
+	// 	Name:      "John Doe",
+	// 	Gender:    constant.MAN,
+	// 	Major:     constant.AI,
+	// 	CreatedAt: time.Now(),
+	// }
+
+	// db.Create(&accountDomain)
+
+	// // Late 데이터 생성
+	// lateDomain := model.Late{
+	// 	Account:   &accountDomain,
+	// 	CreatedAt: time.Now(),
+	// }
+	// db.Create(&lateDomain)
 
 	rdb = setupRedis()
 
@@ -68,13 +87,16 @@ func main() {
 	blackListRepo := repository.NewBlackListRepository(rdb)
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
 	outingRepo := repository.NewOutingRepository(db)
+	lateRepo := repository.NewLateRepository(db)
 
 	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
+	lateUseCase := service.NewLateService(lateRepo)
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo)
 
 	authController := controller.NewAuthController(authUseCase)
 	outingController := controller.NewOutingController(outingUseCase)
+	lateController := controller.NewLateController(lateUseCase)
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 
 	r.Use(middleware.AccountMiddleware(accountRepo, jwtProperties.AccessSecret))
@@ -111,6 +133,10 @@ func main() {
 		outing.GET("", outingController.ListOutingStudent)
 		outing.GET("count", outingController.CountOutingStudent)
 		outing.GET("search", outingController.SearchOutingStudent)
+	}
+	late := r.Group("/api/v1/late")
+	{
+		late.GET("rank", lateController.GetLateStudentTop3)
 	}
 
 	if err := r.Run(":8080"); err != nil {
