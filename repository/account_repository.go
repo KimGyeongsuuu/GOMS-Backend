@@ -106,3 +106,8 @@ func (repository *AccountRepository) UpdateAccountAuthority(ctx context.Context,
 	return nil
 
 }
+
+func (repository *AccountRepository) DeleteAccount(ctx context.Context, account *model.Account) error {
+	result := repository.db.WithContext(ctx).Delete(account)
+	return result.Error
+}

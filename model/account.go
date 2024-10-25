@@ -5,6 +5,8 @@ import (
 	"GOMS-BACKEND-GO/model/data/input"
 	"context"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Account struct {
@@ -19,6 +21,9 @@ type Account struct {
 	Authority  constant.Authority
 	CreatedAt  time.Time
 }
+type AccountUseCase interface {
+	WithDrawAccount(c *gin.Context, ctx context.Context) error
+}
 
 type AccountRepository interface {
 	SaveAccount(ctx context.Context, account *Account) error
@@ -28,4 +33,5 @@ type AccountRepository interface {
 	FindAllAccount(ctx context.Context) ([]Account, error)
 	FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]Account, error)
 	UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error
+	DeleteAccount(ctx context.Context, account *Account) error
 }
