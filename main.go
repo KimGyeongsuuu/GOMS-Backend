@@ -56,25 +56,6 @@ func main() {
 		log.Fatal("Failed to migrate tables:", err)
 	}
 
-	// accountDomain := model.Account{
-	// 	Email:     "example@example.com",
-	// 	Password:  "password123",
-	// 	Grade:     1,
-	// 	Name:      "John Doe",
-	// 	Gender:    constant.MAN,
-	// 	Major:     constant.AI,
-	// 	CreatedAt: time.Now(),
-	// }
-
-	// db.Create(&accountDomain)
-
-	// // Late 데이터 생성
-	// lateDomain := model.Late{
-	// 	Account:   &accountDomain,
-	// 	CreatedAt: time.Now(),
-	// }
-	// db.Create(&lateDomain)
-
 	rdb = setupRedis()
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
