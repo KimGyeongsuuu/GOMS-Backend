@@ -93,11 +93,13 @@ func main() {
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	lateUseCase := service.NewLateService(lateRepo)
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo, lateRepo)
+	accountUseCase := service.NewAccountService(accountRepo)
 
 	authController := controller.NewAuthController(authUseCase)
 	outingController := controller.NewOutingController(outingUseCase)
 	lateController := controller.NewLateController(lateUseCase)
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
+	accountController := controller.NewAccountController(accountUseCase)
 
 	r.Use(middleware.AccountMiddleware(accountRepo, jwtProperties.AccessSecret))
 
@@ -139,7 +141,10 @@ func main() {
 	{
 		late.GET("rank", lateController.GetLateStudentTop3)
 	}
-
+	account := r.Group("/api/v1/account")
+	{
+		account.DELETE("", accountController.WithDraw)
+	}
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
