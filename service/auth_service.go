@@ -2,6 +2,7 @@ package service
 
 import (
 	"GOMS-BACKEND-GO/global/auth/jwt"
+	"GOMS-BACKEND-GO/global/email"
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/constant"
@@ -11,13 +12,17 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 type AuthService struct {
-	accountRepo      model.AccountRepository
-	tokenAdapter     *jwt.GenerateTokenAdapter
-	tokenParser      *jwt.TokenParser
-	refreshTokenRepo model.RefreshTokenRepository
+	accountRepo        model.AccountRepository
+	tokenAdapter       *jwt.GenerateTokenAdapter
+	tokenParser        *jwt.TokenParser
+	refreshTokenRepo   model.RefreshTokenRepository
+	authenticationRepo model.AuthenticationRepository
+	authCodeRepo       model.AuthCodeRepository
 }
 
 func NewAuthService(
@@ -25,12 +30,16 @@ func NewAuthService(
 	tokenAdapter *jwt.GenerateTokenAdapter,
 	refreshTokenRepo model.RefreshTokenRepository,
 	tokenParser *jwt.TokenParser,
+	authenticationRepo model.AuthenticationRepository,
+	authCodeRepo model.AuthCodeRepository,
 ) model.AuthUseCase {
 	return &AuthService{
-		accountRepo:      accountRepo,
-		tokenAdapter:     tokenAdapter,
-		refreshTokenRepo: refreshTokenRepo,
-		tokenParser:      tokenParser,
+		accountRepo:        accountRepo,
+		tokenAdapter:       tokenAdapter,
+		refreshTokenRepo:   refreshTokenRepo,
+		tokenParser:        tokenParser,
+		authenticationRepo: authenticationRepo,
+		authCodeRepo:       authCodeRepo,
 	}
 }
 
@@ -111,7 +120,6 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 	if service.accountRepo == nil {
 		return output.TokenOutput{}, fmt.Errorf("accountRepo is not initialized")
 	}
-	fmt.Println("dddd")
 
 	if refreshTokenDomain.AccountID == 0 {
 		return output.TokenOutput{}, fmt.Errorf("invalid AccountID in refresh token")
@@ -128,6 +136,71 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 	service.refreshTokenRepo.DeleteRefreshToken(ctx, refreshTokenDomain)
 	return tokenOutput, nil
 
+}
+
+func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error {
+	templateName := "verification.html"
+	verificationCode := generateVerificationCode()
+
+	success, err := email.SendEmailSMTP(input.Email, nil, templateName, verificationCode)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	if !success {
+		return fmt.Errorf("email not sent")
+	}
+
+	exists, err := service.authenticationRepo.ExistsByEmail(ctx, input.Email)
+	if err != nil {
+		return fmt.Errorf("failed to exists by email method")
+	}
+
+	if exists {
+		authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
+		if err != nil {
+			return fmt.Errorf("failed to find by email method")
+		}
+		if authentication.AttemptCount > 5 {
+			return fmt.Errorf("many email request (over 5 times)")
+		}
+
+		authentication.AttemptCount++
+
+		err = service.authenticationRepo.SaveAuthentication(ctx, authentication)
+		if err != nil {
+			return fmt.Errorf("failed to save updated authentication: %v", err)
+		}
+
+		return nil
+	}
+
+	if !exists {
+		authentication := &model.Authentication{
+			Email:           input.Email,
+			AttemptCount:    1,
+			AuthCodeCount:   0,
+			IsAuthenticated: false,
+			ExpiredAt:       time.Now().Add(5 * time.Minute),
+		}
+
+		service.authenticationRepo.SaveAuthentication(ctx, authentication)
+
+	}
+
+	authCode := &model.AuthCode{
+		Email:     input.Email,
+		AuthCode:  verificationCode,
+		ExpiredAt: time.Now().Add(5 * time.Minute),
+	}
+
+	service.authCodeRepo.SaveAuthCode(ctx, authCode)
+
+	return nil
+}
+
+func generateVerificationCode() string {
+	return fmt.Sprintf("%04d", rand.Intn(10000))
 }
 
 func extractGrade(email string) *int {

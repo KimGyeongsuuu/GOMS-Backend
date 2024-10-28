@@ -12,3 +12,7 @@ type SignInInput struct {
 	Email    string
 	Password string
 }
+
+type SendEmaiInput struct {
+	Email string
+}
