@@ -37,3 +37,22 @@ func (repository *AuthCodeRepository) SaveAuthCode(ctx context.Context, authCode
 
 	return nil
 }
+
+func (repository *AuthCodeRepository) FindByEmail(ctx context.Context, email string) (*model.AuthCode, error) {
+	key := "authcode:" + email
+
+	authCodeJson, err := repository.rdb.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get value from Redis: %v", err)
+	}
+
+	var authCode model.AuthCode
+	if err := json.Unmarshal([]byte(authCodeJson), &authCode); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal authentication: %v", err)
+	}
+
+	return &authCode, nil
+}

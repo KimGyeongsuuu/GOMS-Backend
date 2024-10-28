@@ -16,3 +16,8 @@ type SignInInput struct {
 type SendEmaiInput struct {
 	Email string
 }
+
+type VerifyAuthCodeInput struct {
+	Email    string
+	AuthCode string
+}

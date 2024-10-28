@@ -100,6 +100,7 @@ func main() {
 		auth.POST("signin", authController.SignIn)
 		auth.PATCH("", authController.TokenReissue)
 		auth.POST("send/email", authController.SendAuthEmail)
+		auth.GET("verify/email", authController.VerifyAuthCode)
 	}
 	studentCouncil := r.Group("/api/v1/student-council")
 	{

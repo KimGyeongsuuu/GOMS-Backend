@@ -32,6 +32,7 @@ type AuthUseCase interface {
 	SignIn(ctx context.Context, input *input.SignInInput) (output.TokenOutput, error)
 	TokenReissue(ctx context.Context, refreshToken string) (output.TokenOutput, error)
 	SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error
+	VerifyAuthCode(ctx context.Context, email string, authCode string) error
 }
 
 type RefreshTokenRepository interface {
@@ -42,6 +43,7 @@ type RefreshTokenRepository interface {
 
 type AuthCodeRepository interface {
 	SaveAuthCode(ctx context.Context, authCode *AuthCode) error
+	FindByEmail(ctx context.Context, email string) (*AuthCode, error)
 }
 
 type AuthenticationRepository interface {
