@@ -66,3 +66,20 @@ func (controller *AuthController) TokenReissue(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"TokenOutput": token})
 }
+
+func (controller *AuthController) SendAuthEmail(ctx *gin.Context) {
+	var input input.SendEmaiInput
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	err := controller.authUseCase.SendAuthEmail(context.Background(), &input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}

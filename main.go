@@ -56,25 +56,6 @@ func main() {
 		log.Fatal("Failed to migrate tables:", err)
 	}
 
-	// accountDomain := model.Account{
-	// 	Email:     "example@example.com",
-	// 	Password:  "password123",
-	// 	Grade:     1,
-	// 	Name:      "John Doe",
-	// 	Gender:    constant.MAN,
-	// 	Major:     constant.AI,
-	// 	CreatedAt: time.Now(),
-	// }
-
-	// db.Create(&accountDomain)
-
-	// // Late 데이터 생성
-	// lateDomain := model.Late{
-	// 	Account:   &accountDomain,
-	// 	CreatedAt: time.Now(),
-	// }
-	// db.Create(&lateDomain)
-
 	rdb = setupRedis()
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
@@ -88,8 +69,10 @@ func main() {
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
 	outingRepo := repository.NewOutingRepository(db)
 	lateRepo := repository.NewLateRepository(db)
+	authenticationRepo := repository.NewAuthenticationRepository(rdb)
+	authCodeRepo := repository.NewAuthCodeRepository(rdb)
 
-	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser)
+	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser, authenticationRepo, authCodeRepo)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	lateUseCase := service.NewLateService(lateRepo)
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo, lateRepo)
@@ -116,7 +99,7 @@ func main() {
 		auth.POST("signup", authController.SignUp)
 		auth.POST("signin", authController.SignIn)
 		auth.PATCH("", authController.TokenReissue)
-
+		auth.POST("send/email", authController.SendAuthEmail)
 	}
 	studentCouncil := r.Group("/api/v1/student-council")
 	{
