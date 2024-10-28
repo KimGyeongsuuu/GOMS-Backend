@@ -199,6 +199,36 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 	return nil
 }
 
+func (service *AuthService) VerifyAuthCode(ctx context.Context, email string, authCode string) error {
+	authCodeDomain, err := service.authCodeRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("auth code domain not found")
+	}
+
+	authentication, err := service.authenticationRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("authentication domain not found")
+	}
+
+	if authentication == nil {
+		return fmt.Errorf("authentication domain not found")
+	}
+
+	if authentication.AuthCodeCount > 5 {
+		return fmt.Errorf("to many verify auth code request (over 5 times)")
+	}
+
+	if authCodeDomain.AuthCode != authCode {
+		authentication.AuthCodeCount++
+		service.authenticationRepo.SaveAuthentication(ctx, authentication)
+		return fmt.Errorf("auth code not match")
+	}
+
+	authentication.IsAuthenticated = true
+	service.authenticationRepo.SaveAuthentication(ctx, authentication)
+	return nil
+}
+
 func generateVerificationCode() string {
 	return fmt.Sprintf("%04d", rand.Intn(10000))
 }

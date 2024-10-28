@@ -83,3 +83,18 @@ func (controller *AuthController) SendAuthEmail(ctx *gin.Context) {
 
 	ctx.Status(http.StatusOK)
 }
+
+func (controller *AuthController) VerifyAuthCode(ctx *gin.Context) {
+
+	email := ctx.Query("email")
+	authCode := ctx.Query("authCode")
+
+	err := controller.authUseCase.VerifyAuthCode(context.Background(), email, authCode)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+
+}
