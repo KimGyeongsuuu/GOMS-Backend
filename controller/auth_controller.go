@@ -32,7 +32,7 @@ func (controller *AuthController) SignUp(ctx *gin.Context) {
 			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.Status(http.StatusCreated)
@@ -48,7 +48,7 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 
 	token, err := controller.authUseCase.SignIn(context.Background(), &input)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -60,7 +60,7 @@ func (controller *AuthController) TokenReissue(ctx *gin.Context) {
 
 	token, err := controller.authUseCase.TokenReissue(context.Background(), refreshToken)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "token reissue error"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 

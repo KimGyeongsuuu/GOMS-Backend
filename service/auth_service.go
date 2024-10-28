@@ -50,6 +50,17 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 		return errors.New("failed to check email existence")
 	}
 
+	authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
+	if err != nil {
+		return errors.New("find authentication by email is failed ")
+	}
+	if authentication == nil {
+		return errors.New("authentication not found")
+	}
+	if !authentication.IsAuthenticated {
+		return errors.New("authentication not found")
+	}
+
 	if exists {
 		return errors.New("email already exists")
 	}
