@@ -147,7 +147,7 @@ func setupDatabase() (*gorm.DB, error) {
 
 func setupRedis() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "svc.sel4.cloudtype.app:30258",
 		Password: "",
 		DB:       0,
 	})
