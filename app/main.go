@@ -5,13 +5,13 @@ import (
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
-	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
 	"GOMS-BACKEND-GO/service"
 	"context"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -49,11 +49,6 @@ func main() {
 	db, err := setupDatabase()
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
-	}
-
-	err = db.AutoMigrate(&model.Account{}, &model.Outing{}, &model.Late{})
-	if err != nil {
-		log.Fatal("Failed to migrate tables:", err)
 	}
 
 	rdb = setupRedis()
@@ -142,12 +137,23 @@ func setupDatabase() (*gorm.DB, error) {
 	database := os.Getenv("DB_NAME")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true", user, password, host, port, database)
-	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	var db *gorm.DB
+	var err error
+
+	for i := 0; i < 5; i++ {
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		if err == nil {
+			return db, nil
+		}
+		time.Sleep(2 * time.Second)
+	}
+	return nil, fmt.Errorf("failed to connect to the database: %w", err)
 }
 
 func setupRedis() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "svc.sel4.cloudtype.app:30258",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})
