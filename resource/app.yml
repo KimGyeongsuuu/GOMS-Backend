@@ -1,0 +1,24 @@
+jwt:
+  access_secret: ${ACCESS_SECRET}
+  refresh_secret: ${REFRESH_SECRET}
+  access_exp: ${ACCESS_EXP}
+  refresh_exp: ${REFRESH_EXP}
+
+outing:
+  outing_exp: ${OUTING_EXP}
+  outing_blacklist_exp: ${OUTING_BLACK_EXP}
+
+data:
+  mysql:  
+    user: ${DB_USER}
+    pass: ${DB_PASSWORD}
+    host: ${DB_HOST}
+    port: ${DB_PORT}
+    db: ${DB_NAME}
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+
+email:
+  id: ${EMAIL_ID}
+  pass: ${EMAIL_PASSWORD}
