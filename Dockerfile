@@ -13,7 +13,6 @@ FROM alpine:latest
 
 COPY --from=builder /build/goms-backend-go /goms-backend-go
 
-COPY --from=builder /build/.env /.env
 COPY --from=builder /build/resource/app.yml /resource/app.yml
 
 EXPOSE 8080
