@@ -29,9 +29,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Generate files
-        run: make generate
-
       - name: Build Docker image
         run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/goms-go:latest -f ./Dockerfile .
 
