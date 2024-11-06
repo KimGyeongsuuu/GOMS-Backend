@@ -26,7 +26,7 @@ func Data() DataConfig {
 
 type DataConfig struct {
 	Mysql MysqlConfig `yaml:"mysql"`
-	Redis RedisConfig `yaml:"redis`
+	Redis RedisConfig `yaml:"redis"`
 }
 
 type MysqlConfig struct {
