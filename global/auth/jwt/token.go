@@ -15,18 +15,16 @@ import (
 )
 
 type GenerateTokenAdapter struct {
-	jwtProperties        *config.JwtProperties
-	jwtExpTimeProperties *config.JwtExpTimeProperties
-	rdb                  *redis.Client
-	refreshRepo          *repository.RefreshTokenRepository
+	jwtConfig   *config.JWTConfig
+	rdb         *redis.Client
+	refreshRepo *repository.RefreshTokenRepository
 }
 
-func NewGenerateTokenAdapter(jwtProperties *config.JwtProperties, jwtExpTimeProperties *config.JwtExpTimeProperties, rdb *redis.Client, refreshRepo *repository.RefreshTokenRepository) *GenerateTokenAdapter {
+func NewGenerateTokenAdapter(jwtConfig *config.JWTConfig, rdb *redis.Client, refreshRepo *repository.RefreshTokenRepository) *GenerateTokenAdapter {
 	return &GenerateTokenAdapter{
-		jwtProperties:        jwtProperties,
-		jwtExpTimeProperties: jwtExpTimeProperties,
-		rdb:                  rdb,
-		refreshRepo:          refreshRepo,
+		jwtConfig:   jwtConfig,
+		rdb:         rdb,
+		refreshRepo: refreshRepo,
 	}
 }
 
@@ -40,10 +38,10 @@ func (adapter *GenerateTokenAdapter) GenerateToken(ctx context.Context, accountI
 		return output.TokenOutput{}, err
 	}
 
-	accessTokenExp := time.Now().Add(time.Duration(adapter.jwtExpTimeProperties.AccessExp) * time.Second)
-	refreshTokenExp := time.Now().Add(time.Duration(adapter.jwtExpTimeProperties.RefreshExp) * time.Second)
+	accessTokenExp := time.Now().Add(time.Duration(adapter.jwtConfig.AccessExp) * time.Second)
+	refreshTokenExp := time.Now().Add(time.Duration(adapter.jwtConfig.RefreshExp) * time.Second)
 
-	err = adapter.rdb.Set(context.Background(), refreshToken, accountId, time.Duration(adapter.jwtExpTimeProperties.RefreshExp)*time.Second).Err()
+	err = adapter.rdb.Set(context.Background(), refreshToken, accountId, time.Duration(adapter.jwtConfig.RefreshExp)*time.Second).Err()
 	if err != nil {
 		return output.TokenOutput{}, err
 	}
@@ -62,11 +60,11 @@ func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, autho
 		"sub":       accountId,
 		"accountID": accountId,
 		"authority": authority,
-		"exp":       time.Now().Add(time.Duration(adapter.jwtExpTimeProperties.AccessExp) * time.Second).Unix(),
+		"exp":       time.Now().Add(time.Duration(adapter.jwtConfig.AccessExp) * time.Second).Unix(),
 		"iat":       time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(adapter.jwtProperties.AccessSecret)
+	signedToken, err := token.SignedString(adapter.jwtConfig.AccessSecret)
 	if err != nil {
 		return "", errors.New("failed to sign access token")
 	}
@@ -76,11 +74,11 @@ func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, autho
 func (adapter *GenerateTokenAdapter) generateRefreshToken(ctx context.Context, accountId uint64) (string, error) {
 	claims := jwt.MapClaims{
 		"sub": accountId,
-		"exp": time.Now().Add(time.Duration(adapter.jwtExpTimeProperties.RefreshExp) * time.Second).Unix(),
+		"exp": time.Now().Add(time.Duration(adapter.jwtConfig.RefreshExp) * time.Second).Unix(),
 		"iat": time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(adapter.jwtProperties.RefreshSecret)
+	signedToken, err := token.SignedString(adapter.jwtConfig.RefreshSecret)
 	if err != nil {
 		return "", errors.New("failed to sign refresh token")
 	}
@@ -88,7 +86,7 @@ func (adapter *GenerateTokenAdapter) generateRefreshToken(ctx context.Context, a
 	refreshToken := &model.RefreshToken{
 		RefreshToken: signedToken,
 		AccountID:    accountId,
-		ExpiredAt:    adapter.jwtExpTimeProperties.RefreshExp,
+		ExpiredAt:    adapter.jwtConfig.RefreshExp,
 	}
 
 	adapter.refreshRepo.SaveRefreshToken(ctx, refreshToken)

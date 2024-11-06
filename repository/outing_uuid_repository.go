@@ -11,14 +11,14 @@ import (
 )
 
 type OutingUUIDRepository struct {
-	rdb              *redis.Client
-	outingProperties *config.OutingProperties
+	rdb          *redis.Client
+	outingConfig *config.OutingConfig
 }
 
-func NewOutingUUIDRepository(rdb *redis.Client, outingProperties *config.OutingProperties) *OutingUUIDRepository {
+func NewOutingUUIDRepository(rdb *redis.Client, outingConfig *config.OutingConfig) *OutingUUIDRepository {
 	return &OutingUUIDRepository{
-		rdb:              rdb,
-		outingProperties: outingProperties,
+		rdb:          rdb,
+		outingConfig: outingConfig,
 	}
 }
 func (repository *OutingUUIDRepository) CreateOutingUUID(ctx context.Context) (uuid.UUID, error) {
@@ -35,7 +35,7 @@ func (repository *OutingUUIDRepository) CreateOutingUUID(ctx context.Context) (u
 
 	fmt.Printf("Storing Key: %s, Value: %v\n", key, value)
 
-	expiration := time.Duration(repository.outingProperties.OutingExp) * time.Second
+	expiration := time.Duration(repository.outingConfig.OutingExp) * time.Second
 
 	err := repository.rdb.Set(ctx, key, value, expiration).Err()
 	if err != nil {

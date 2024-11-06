@@ -10,7 +10,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,25 +25,18 @@ var (
 )
 
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file ", err.Error())
 	}
 
-	jwtProperties, jwtExpTimeProperties, err := config.LoadJwtProperties()
-	if err != nil {
-		log.Fatal("Failed to load JWT properties:", err)
+	if err := config.Load("./resource/app.yml"); err != nil {
+		log.Fatal(err.Error())
 	}
 
-	outingProperties, err := config.LoadOutingProperties()
-	if err != nil {
-		log.Fatal("Failed to load Outing properties:", err)
-	}
-
-	outingBlackListProperties, err := config.LoadOutingBlackListProperties()
-	if err != nil {
-		log.Fatal("Failed to load Outing black list properties:", err)
-	}
+	jwtConfig := config.JWT()
+	outingConfig := config.Outing()
 
 	db, err := setupDatabase()
 	if err != nil {
@@ -54,14 +46,14 @@ func main() {
 	rdb = setupRedis()
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
-	tokenAdapter := jwt.NewGenerateTokenAdapter(jwtProperties, jwtExpTimeProperties, rdb, refreshRepo)
+	tokenAdapter := jwt.NewGenerateTokenAdapter(&jwtConfig, rdb, refreshRepo)
 	tokenParser := jwt.NewTokenParser()
 
 	r := gin.Default()
 
 	accountRepo := repository.NewAccountRepository(db)
 	blackListRepo := repository.NewBlackListRepository(rdb)
-	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, outingProperties)
+	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, &outingConfig)
 	outingRepo := repository.NewOutingRepository(db)
 	lateRepo := repository.NewLateRepository(db)
 	authenticationRepo := repository.NewAuthenticationRepository(rdb)
@@ -70,7 +62,7 @@ func main() {
 	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser, authenticationRepo, authCodeRepo)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	lateUseCase := service.NewLateService(lateRepo)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, outingBlackListProperties, outingRepo, lateRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, &outingConfig, outingRepo, lateRepo)
 	accountUseCase := service.NewAccountService(accountRepo)
 
 	authController := controller.NewAuthController(authUseCase)
@@ -79,7 +71,7 @@ func main() {
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 	accountController := controller.NewAccountController(accountUseCase)
 
-	r.Use(middleware.AccountMiddleware(accountRepo, jwtProperties.AccessSecret))
+	r.Use(middleware.AccountMiddleware(accountRepo, []byte(jwtConfig.AccessSecret)))
 
 	health := r.Group("/health")
 	{
@@ -99,7 +91,7 @@ func main() {
 	}
 	studentCouncil := r.Group("/api/v1/student-council")
 	{
-		studentCouncil.Use(middleware.AuthorizeRoleJWT(jwtProperties.AccessSecret, "ROLE_STUDENT_COUNCIL"))
+		studentCouncil.Use(middleware.AuthorizeRoleJWT([]byte(jwtConfig.AccessSecret), "ROLE_STUDENT_COUNCIL"))
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
 		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
 		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
@@ -130,13 +122,13 @@ func main() {
 }
 
 func setupDatabase() (*gorm.DB, error) {
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	database := os.Getenv("DB_NAME")
+	user := config.Data().Mysql.User
+	password := config.Data().Mysql.Pass
+	host := config.Data().Mysql.Host
+	port := config.Data().Mysql.Port
+	database := config.Data().Mysql.Db
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true", user, password, host, port, database)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true", user, password, host, port, database)
 
 	var db *gorm.DB
 	var err error
@@ -152,8 +144,13 @@ func setupDatabase() (*gorm.DB, error) {
 }
 
 func setupRedis() *redis.Client {
+	host := config.Data().Redis.Host
+	port := config.Data().Redis.Port
+
+	addr := fmt.Sprintf("%s:%d", host, port)
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
+		Addr:     addr,
 		Password: "",
 		DB:       0,
 	})

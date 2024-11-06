@@ -13,29 +13,29 @@ import (
 )
 
 type StudentCouncilService struct {
-	outingUUIDRepo            model.OutingUUIDRepository
-	accountRepo               model.AccountRepository
-	blackListRepo             model.BlackListRepository
-	outingBlackListProperties *config.OutingBlackListProperties
-	outingRepo                model.OutingRepository
-	lateRepo                  model.LateRepository
+	outingUUIDRepo model.OutingUUIDRepository
+	accountRepo    model.AccountRepository
+	blackListRepo  model.BlackListRepository
+	outingConfig   *config.OutingConfig
+	outingRepo     model.OutingRepository
+	lateRepo       model.LateRepository
 }
 
 func NewStudentCouncilService(
 	outingUUIDRepo model.OutingUUIDRepository,
 	accountRepo model.AccountRepository,
 	blackListRepo model.BlackListRepository,
-	outingBlackListProperties *config.OutingBlackListProperties,
+	outingConfig *config.OutingConfig,
 	outingRepo model.OutingRepository,
 	lateRepo model.LateRepository,
 ) model.StudentCouncilUseCase {
 	return &StudentCouncilService{
-		outingUUIDRepo:            outingUUIDRepo,
-		accountRepo:               accountRepo,
-		blackListRepo:             blackListRepo,
-		outingBlackListProperties: outingBlackListProperties,
-		outingRepo:                outingRepo,
-		lateRepo:                  lateRepo,
+		outingUUIDRepo: outingUUIDRepo,
+		accountRepo:    accountRepo,
+		blackListRepo:  blackListRepo,
+		outingConfig:   outingConfig,
+		outingRepo:     outingRepo,
+		lateRepo:       lateRepo,
 	}
 }
 
@@ -116,7 +116,7 @@ func (service *StudentCouncilService) UpdateAccountAuthority(ctx context.Context
 }
 
 func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountID uint64) error {
-	expiration := time.Duration(service.outingBlackListProperties.OutingBlackListExp) * time.Second
+	expiration := time.Duration(service.outingConfig.OutingBlacklistExp) * time.Second
 
 	blackList := &model.BlackList{
 		AccountID: accountID,
