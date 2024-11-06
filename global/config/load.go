@@ -28,7 +28,6 @@ func Load(filePath string) error {
 
 	var config RuntimeConfig
 	if err := viper.UnmarshalExact(&config); err != nil {
-		fmt.Println("ccccccccccccccccc")
 		return errs.Wrap(err, "config unmarshaling failed")
 	}
 
