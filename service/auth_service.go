@@ -150,14 +150,17 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 }
 
 func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error {
-	templateName := "verification.html"
 	verificationCode := generateVerificationCode()
 
-	success, err := email.SendEmailSMTP(input.Email, nil, templateName, verificationCode)
+	emailBody := fmt.Sprintf(
+		`<p>Your verification code is: <strong>%s</strong></p>`,
+		verificationCode,
+	)
+
+	success, err := email.SendEmailSMTP(input.Email, nil, emailBody, verificationCode)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
-
 	if !success {
 		return fmt.Errorf("email not sent")
 	}
@@ -166,7 +169,6 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 	if err != nil {
 		return fmt.Errorf("failed to exists by email method")
 	}
-
 	if exists {
 		authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
 		if err != nil {
@@ -175,36 +177,28 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 		if authentication.AttemptCount > 5 {
 			return fmt.Errorf("many email request (over 5 times)")
 		}
-
 		authentication.AttemptCount++
-
 		err = service.authenticationRepo.SaveAuthentication(ctx, authentication)
 		if err != nil {
 			return fmt.Errorf("failed to save updated authentication: %v", err)
 		}
-
 		return nil
 	}
 
-	if !exists {
-		authentication := &model.Authentication{
-			Email:           input.Email,
-			AttemptCount:    1,
-			AuthCodeCount:   0,
-			IsAuthenticated: false,
-			ExpiredAt:       time.Now().Add(5 * time.Minute),
-		}
-
-		service.authenticationRepo.SaveAuthentication(ctx, authentication)
-
+	authentication := &model.Authentication{
+		Email:           input.Email,
+		AttemptCount:    1,
+		AuthCodeCount:   0,
+		IsAuthenticated: false,
+		ExpiredAt:       time.Now().Add(5 * time.Minute),
 	}
+	service.authenticationRepo.SaveAuthentication(ctx, authentication)
 
 	authCode := &model.AuthCode{
 		Email:     input.Email,
 		AuthCode:  verificationCode,
 		ExpiredAt: time.Now().Add(5 * time.Minute),
 	}
-
 	service.authCodeRepo.SaveAuthCode(ctx, authCode)
 
 	return nil
