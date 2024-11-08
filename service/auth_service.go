@@ -153,11 +153,11 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 	verificationCode := generateVerificationCode()
 
 	emailBody := fmt.Sprintf(
-		`<p>Your verification code is: <strong>%s</strong></p>`,
+		`<p>인증번호 : <strong>%s</strong></p>`,
 		verificationCode,
 	)
 
-	success, err := email.SendEmailSMTP(input.Email, nil, emailBody, verificationCode)
+	success, err := email.SendEmailSMTP(input.Email, emailBody, verificationCode)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
