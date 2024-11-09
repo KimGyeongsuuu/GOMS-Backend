@@ -16,7 +16,7 @@ services:
       - "--character-set-server=utf8mb4"
       - "--collation-server=utf8mb4_unicode_ci"
     env_file:
-      - ./GOMS-Backend/.env 
+      - .env 
 
     volumes:
       - mysql_data:/var/lib/mysql
@@ -40,7 +40,9 @@ services:
     depends_on:
       - mysql
       - redis
-            
+    env_file:
+      - .env
+
 volumes:
   mysql_data:
   redis_data:
