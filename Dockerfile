@@ -10,7 +10,6 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o goms-backend-go
    
 FROM alpine:latest
-WORKDIR /
 
 COPY --from=builder /build/goms-backend-go /goms-backend-go
 COPY --from=builder /build/resource/app.yml /resource/app.yml

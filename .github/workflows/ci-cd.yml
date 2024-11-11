@@ -37,6 +37,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          source: ".env"
+          target: "~/GOMS-Backend/.env"
           port: 22
           script: |
             cd GOMS-Backend/
