@@ -40,6 +40,9 @@ services:
     depends_on:
       - mysql
       - redis
+    env_file:
+      - .env
+
 
 volumes:
   mysql_data:
