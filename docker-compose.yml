@@ -38,8 +38,6 @@ services:
     depends_on:
       - mysql
       - redis
-  
-
 
 volumes:
   mysql_data:
