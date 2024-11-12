@@ -1,21 +1,17 @@
 FROM golang:1.22 AS builder
 
-WORKDIR /build
+WORKDIR /GOMS-Backend
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
-# .env 파일 복사
-COPY .env ./
-
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o goms-backend-go
-   
+
 FROM alpine:latest
 
-COPY --from=builder /build/goms-backend-go /goms-backend-go
-COPY --from=builder /build/resource/app.yml /resource/app.yml
+COPY --from=builder /GOMS-Backend/resource/app.yml /resource/app.yml
 
 EXPOSE 8080
 
