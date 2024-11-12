@@ -1,9 +1,7 @@
-name: CI/CD
+name: CI
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
     branches: ["main"]
 
 jobs:
@@ -19,20 +17,8 @@ jobs:
           go-version: '1.21'
           cache: true
 
-      - name: Create .env file 
-        run: echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
-
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image
-        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/goms-go -f ./Dockerfile .
-
-      - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/goms-go
 
       - name: SSH into EC2 and run Docker Compose
         uses: appleboy/ssh-action@v0.1.6
