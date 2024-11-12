@@ -77,7 +77,7 @@ func main() {
 	{
 		health.GET("", func(c *gin.Context) {
 			c.JSON(200, gin.H{
-				"message": "goms server is running",
+				"message": "goms server is running !!",
 			})
 		})
 	}
