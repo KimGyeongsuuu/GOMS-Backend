@@ -66,7 +66,7 @@ func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, autho
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(adapter.jwtConfig.AccessSecret))
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", errors.New("failed to sign access token")
 	}
 	return signedToken, nil
 }

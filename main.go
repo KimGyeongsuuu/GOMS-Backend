@@ -2,21 +2,20 @@ package main
 
 import (
 	"GOMS-BACKEND-GO/controller"
+	"GOMS-BACKEND-GO/database/cache"
+	"GOMS-BACKEND-GO/database/mysql"
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
+	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
 	"GOMS-BACKEND-GO/service"
 	"context"
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 var (
@@ -38,12 +37,17 @@ func main() {
 	jwtConfig := config.JWT()
 	outingConfig := config.Outing()
 
-	db, err := setupDatabase()
+	db, err := mysql.NewMySQLConnection()
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	rdb = setupRedis()
+	rdb = cache.NewRedisClient(ctx)
+
+	err = db.AutoMigrate(&model.Account{}, &model.Outing{}, &model.Late{})
+	if err != nil {
+		log.Fatal("Failed to migrate tables:", err)
+	}
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
 	tokenAdapter := jwt.NewGenerateTokenAdapter(&jwtConfig, rdb, refreshRepo)
@@ -119,46 +123,4 @@ func main() {
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
-}
-
-func setupDatabase() (*gorm.DB, error) {
-	user := config.Data().Mysql.User
-	password := config.Data().Mysql.Pass
-	host := config.Data().Mysql.Host
-	port := config.Data().Mysql.Port
-	database := config.Data().Mysql.Db
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true", user, password, host, port, database)
-
-	var db *gorm.DB
-	var err error
-
-	for i := 0; i < 5; i++ {
-		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-		if err == nil {
-			return db, nil
-		}
-		time.Sleep(2 * time.Second)
-	}
-	return nil, fmt.Errorf("failed to connect to the database: %w", err)
-}
-
-func setupRedis() *redis.Client {
-	host := config.Data().Redis.Host
-	port := config.Data().Redis.Port
-
-	addr := fmt.Sprintf("%s:%d", host, port)
-
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: "",
-		DB:       0,
-	})
-
-	_, err := rdb.Ping(ctx).Result()
-	if err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
-		return nil
-	}
-	return rdb
 }
