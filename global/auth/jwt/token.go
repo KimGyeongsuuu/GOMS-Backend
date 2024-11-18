@@ -64,9 +64,9 @@ func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, autho
 		"iat":       time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(adapter.jwtConfig.AccessSecret)
+	signedToken, err := token.SignedString([]byte(adapter.jwtConfig.AccessSecret))
 	if err != nil {
-		return "", errors.New("failed to sign access token")
+		return "", errors.New(err.Error())
 	}
 	return signedToken, nil
 }
@@ -78,7 +78,7 @@ func (adapter *GenerateTokenAdapter) generateRefreshToken(ctx context.Context, a
 		"iat": time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(adapter.jwtConfig.RefreshSecret)
+	signedToken, err := token.SignedString([]byte(adapter.jwtConfig.RefreshSecret))
 	if err != nil {
 		return "", errors.New("failed to sign refresh token")
 	}
