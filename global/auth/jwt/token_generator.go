@@ -41,11 +41,6 @@ func (adapter *GenerateTokenAdapter) GenerateToken(ctx context.Context, accountI
 	accessTokenExp := time.Now().Add(time.Duration(adapter.jwtConfig.AccessExp) * time.Second)
 	refreshTokenExp := time.Now().Add(time.Duration(adapter.jwtConfig.RefreshExp) * time.Second)
 
-	err = adapter.rdb.Set(context.Background(), refreshToken, accountId, time.Duration(adapter.jwtConfig.RefreshExp)*time.Second).Err()
-	if err != nil {
-		return output.TokenOutput{}, err
-	}
-
 	return output.TokenOutput{
 		AccessToken:     accessToken,
 		RefreshToken:    refreshToken,
@@ -58,7 +53,6 @@ func (adapter *GenerateTokenAdapter) GenerateToken(ctx context.Context, accountI
 func (adapter *GenerateTokenAdapter) generateAccessToken(accountId uint64, authority constant.Authority) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":       accountId,
-		"accountID": accountId,
 		"authority": authority,
 		"exp":       time.Now().Add(time.Duration(adapter.jwtConfig.AccessExp) * time.Second).Unix(),
 		"iat":       time.Now().Unix(),

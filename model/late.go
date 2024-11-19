@@ -12,6 +12,7 @@ type Late struct {
 	Account   *Account `gorm:"foreignKey:AccountID"`
 	CreatedAt time.Time
 }
+
 type LateUseCase interface {
 	GetTop3LateStudent(ctx context.Context) ([]output.LateOutput, error)
 }

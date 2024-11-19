@@ -18,9 +18,7 @@ func AuthorizeRoleJWT(secret []byte, requiredRole string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		tokenString := strings.TrimSpace(strings.Replace(authHeader, "Bearer", "", 1))
-
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return secret, nil
 		})
@@ -84,7 +82,7 @@ func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []by
 			c.Abort()
 			return
 		}
-		accountID, ok := claims["accountID"].(float64)
+		accountID, ok := claims["sub"].(float64)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "not found account id in claims"})
 			c.Abort()

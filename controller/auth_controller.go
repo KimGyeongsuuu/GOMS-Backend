@@ -74,7 +74,6 @@ func (controller *AuthController) SendAuthEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
-
 	err := controller.authUseCase.SendAuthEmail(context.Background(), &input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

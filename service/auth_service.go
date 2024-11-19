@@ -50,21 +50,25 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 		return errors.New("failed to check email existence")
 	}
 
+	if exists {
+		return errors.New("email already exists")
+	}
+
+	// 인증된 사용자 인지 검증
 	authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return errors.New("find authentication by email is failed ")
 	}
 	if authentication == nil {
+		fmt.Println("authentication is nil")
 		return errors.New("authentication not found")
 	}
 	if !authentication.IsAuthenticated {
+		fmt.Println("authentication is false")
 		return errors.New("authentication not found")
 	}
 
-	if exists {
-		return errors.New("email already exists")
-	}
-
+	// password 인코딩
 	encodedPassword, err := util.EncodePassword(input.Password)
 	if err != nil {
 		return err
@@ -73,7 +77,7 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 	account := &model.Account{
 		Email:      input.Email,
 		Password:   encodedPassword,
-		Grade:      *extractGrade(input.Email),
+		Grade:      extractGrade(input.Email),
 		Name:       input.Name,
 		Major:      constant.Major(input.Major),
 		Gender:     constant.Gender(input.Gender),
@@ -120,20 +124,20 @@ func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput
 func (service *AuthService) TokenReissue(ctx context.Context, refreshToken string) (output.TokenOutput, error) {
 	parsedRefreshToken, err := service.tokenParser.ParseRefreshToken(refreshToken)
 	if err != nil {
-		return output.TokenOutput{}, fmt.Errorf("request header refresh token is error")
+		return output.TokenOutput{}, errors.New("request header refresh token is error")
 	}
 
 	refreshTokenDomain, err := service.refreshTokenRepo.FindRefreshTokenByRefreshToken(ctx, parsedRefreshToken)
 	if err != nil {
-		return output.TokenOutput{}, fmt.Errorf("find refresh token by refresh token method is eror")
+		return output.TokenOutput{}, errors.New("find refresh token by refresh token method is eror")
 	}
 
 	if service.accountRepo == nil {
-		return output.TokenOutput{}, fmt.Errorf("accountRepo is not initialized")
+		return output.TokenOutput{}, errors.New("accountRepo is not initialized")
 	}
 
 	if refreshTokenDomain.AccountID == 0 {
-		return output.TokenOutput{}, fmt.Errorf("invalid AccountID in refresh token")
+		return output.TokenOutput{}, errors.New("invalid AccountID in refresh token")
 	}
 
 	accountDomain, err := service.accountRepo.FindByAccountID(ctx, refreshTokenDomain.AccountID)
@@ -151,6 +155,7 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 
 func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error {
 	verificationCode := generateVerificationCode()
+	fmt.Println(verificationCode)
 
 	emailBody := fmt.Sprintf(
 		`<p>인증번호 : <strong>%s</strong></p>`,
@@ -162,21 +167,25 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 	if !success {
-		return fmt.Errorf("email not sent")
+		return errors.New("email not sent")
 	}
 
 	exists, err := service.authenticationRepo.ExistsByEmail(ctx, input.Email)
 	if err != nil {
-		return fmt.Errorf("failed to exists by email method")
+		return errors.New("failed to exists by email method")
 	}
+
+	// 이전에 메일을 전송하고 다시 전송하는 case
 	if exists {
 		authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
 		if err != nil {
-			return fmt.Errorf("failed to find by email method")
+			return errors.New("failed to find by email method")
 		}
+		// 전송횟수 5번 이상이면 예외 throw
 		if authentication.AttemptCount > 5 {
-			return fmt.Errorf("many email request (over 5 times)")
+			return errors.New("many email request (over 5 times)")
 		}
+		// 전송횟수 ++
 		authentication.AttemptCount++
 		err = service.authenticationRepo.SaveAuthentication(ctx, authentication)
 		if err != nil {
@@ -185,6 +194,7 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 		return nil
 	}
 
+	// 메일을 처음 전송하는 case
 	authentication := &model.Authentication{
 		Email:           input.Email,
 		AttemptCount:    1,
@@ -207,26 +217,26 @@ func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.Send
 func (service *AuthService) VerifyAuthCode(ctx context.Context, email string, authCode string) error {
 	authCodeDomain, err := service.authCodeRepo.FindByEmail(ctx, email)
 	if err != nil {
-		return fmt.Errorf("auth code domain not found")
+		return errors.New("auth code domain not found")
 	}
 
 	authentication, err := service.authenticationRepo.FindByEmail(ctx, email)
 	if err != nil {
-		return fmt.Errorf("authentication domain not found")
+		return errors.New("authentication domain not found")
 	}
 
 	if authentication == nil {
-		return fmt.Errorf("authentication domain not found")
+		return errors.New("authentication domain not found")
 	}
 
 	if authentication.AuthCodeCount > 5 {
-		return fmt.Errorf("to many verify auth code request (over 5 times)")
+		return errors.New("to many verify auth code request (over 5 times)")
 	}
 
 	if authCodeDomain.AuthCode != authCode {
 		authentication.AuthCodeCount++
 		service.authenticationRepo.SaveAuthentication(ctx, authentication)
-		return fmt.Errorf("auth code not match")
+		return errors.New("auth code not match")
 	}
 
 	authentication.IsAuthenticated = true
@@ -238,10 +248,7 @@ func generateVerificationCode() string {
 	return fmt.Sprintf("%04d", rand.Intn(10000))
 }
 
-func extractGrade(email string) *int {
-	if len(email) < 3 {
-		return nil
-	}
+func extractGrade(email string) int {
 
 	var grade int
 	switch email[2] {
@@ -251,9 +258,7 @@ func extractGrade(email string) *int {
 		grade = 7
 	case '4':
 		grade = 8
-	default:
-		return nil
 	}
 
-	return &grade
+	return grade
 }

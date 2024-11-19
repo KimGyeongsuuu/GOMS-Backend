@@ -23,8 +23,6 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 		return nil, err
 	}
 
-	fmt.Printf("Fetched lates not if: %+v\n", lates)
-
 	var outputList []output.LateOutput
 	fmt.Println(len(lates))
 	for _, late := range lates {

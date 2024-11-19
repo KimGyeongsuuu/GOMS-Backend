@@ -4,6 +4,7 @@ import (
 	"GOMS-BACKEND-GO/model"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -22,10 +23,10 @@ func NewRefreshTokenRepository(rdb *redis.Client) *RefreshTokenRepository {
 
 func (repository *RefreshTokenRepository) SaveRefreshToken(ctx context.Context, refreshToken *model.RefreshToken) error {
 	if repository.rdb == nil {
-		return fmt.Errorf("redis client is nil")
+		return errors.New("redis client is nil")
 	}
 	if ctx == nil {
-		return fmt.Errorf("context is nil")
+		return errors.New("context is nil")
 	}
 
 	tokenJSON, err := json.Marshal(refreshToken)
@@ -45,10 +46,10 @@ func (repository *RefreshTokenRepository) SaveRefreshToken(ctx context.Context, 
 }
 func (repository *RefreshTokenRepository) FindRefreshTokenByRefreshToken(ctx context.Context, refreshToken string) (*model.RefreshToken, error) {
 	if repository.rdb == nil {
-		return nil, fmt.Errorf("redis client is nil")
+		return nil, errors.New("redis client is nil")
 	}
 	if ctx == nil {
-		return nil, fmt.Errorf("context is nil")
+		return nil, errors.New("context is nil")
 	}
 
 	key := "refresh:token:" + refreshToken
@@ -56,7 +57,7 @@ func (repository *RefreshTokenRepository) FindRefreshTokenByRefreshToken(ctx con
 	tokenJSON, err := repository.rdb.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, fmt.Errorf("refresh token not found")
+			return nil, errors.New("refresh token not found")
 		}
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -146,7 +147,7 @@ func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, a
 		return nil
 	}
 	if !exists {
-		return fmt.Errorf("not outing student")
+		return errors.New("not outing student")
 	}
 
 	deleteErr := service.outingRepo.DeleteOutingByAccountID(ctx, accountID)

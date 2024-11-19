@@ -34,9 +34,6 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	jwtConfig := config.JWT()
-	outingConfig := config.Outing()
-
 	db, err := mysql.NewMySQLConnection()
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
@@ -48,6 +45,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to migrate tables:", err)
 	}
+
+	jwtConfig := config.JWT()
+	outingConfig := config.Outing()
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
 	tokenAdapter := jwt.NewGenerateTokenAdapter(&jwtConfig, rdb, refreshRepo)

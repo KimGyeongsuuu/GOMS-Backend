@@ -21,6 +21,7 @@ type Account struct {
 	Authority  constant.Authority
 	CreatedAt  time.Time
 }
+
 type AccountUseCase interface {
 	WithDrawAccount(c *gin.Context, ctx context.Context) error
 }

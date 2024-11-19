@@ -31,8 +31,6 @@ func (repository *BlackListRepository) SaveBlackList(ctx context.Context, blackL
 
 	expiration := time.Duration(blackList.ExpiredAt) * time.Second
 
-	fmt.Printf("Storing Key: %s, Value: %s\n", key, string(blackListJson))
-
 	err = repository.rdb.Set(ctx, key, blackListJson, expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to set value in Redis: %v", err)
@@ -68,7 +66,6 @@ func (repository *BlackListRepository) DeleteBlackList(ctx context.Context, blac
 		return fmt.Errorf("failed to delete value from Redis: %v", err)
 	}
 
-	fmt.Printf("Deleted Key: %s\n", key)
 	return nil
 
 }
