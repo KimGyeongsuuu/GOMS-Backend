@@ -23,7 +23,7 @@ func (controller *AuthController) SignUp(ctx *gin.Context) {
 	var input input.SignUpInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -42,7 +42,7 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 	var input input.SignInInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -71,7 +71,7 @@ func (controller *AuthController) SendAuthEmail(ctx *gin.Context) {
 	var input input.SendEmaiInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	err := controller.authUseCase.SendAuthEmail(context.Background(), &input)

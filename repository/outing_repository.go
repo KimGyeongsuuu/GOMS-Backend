@@ -48,7 +48,7 @@ func (repository *OutingRepository) FindAllOuting(ctx context.Context) ([]model.
 	}
 
 	if len(outings) == 0 {
-		return nil, errors.New("no outings found")
+		return nil, errors.New("not outings found")
 	}
 
 	return outings, nil

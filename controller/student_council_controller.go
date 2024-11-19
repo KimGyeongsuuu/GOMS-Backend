@@ -102,7 +102,7 @@ func (controller *StudentCouncilController) UpdateAuthority(ctx *gin.Context) {
 	var input input.UpdateAccountAuthorityInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
