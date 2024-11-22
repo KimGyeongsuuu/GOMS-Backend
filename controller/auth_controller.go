@@ -27,10 +27,12 @@ func (controller *AuthController) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	if err := controller.authUseCase.SignUp(context.Background(), &input); err != nil {
+	if err := controller.authUseCase.SignUp(context.Background(), input); err != nil {
 		if err.Error() == "email already exists" {
 			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
+		} else if err.Error() == "authentication not found" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -46,7 +48,7 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 		return
 	}
 
-	token, err := controller.authUseCase.SignIn(context.Background(), &input)
+	token, err := controller.authUseCase.SignIn(context.Background(), input)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -74,7 +76,7 @@ func (controller *AuthController) SendAuthEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := controller.authUseCase.SendAuthEmail(context.Background(), &input)
+	err := controller.authUseCase.SendAuthEmail(context.Background(), input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

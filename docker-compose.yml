@@ -4,11 +4,13 @@ services:
   mysql:
     image: mysql:8.0.0
     container_name: goms-mysql
+    platform: linux/amd64  
+  
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD} 
+      MYSQL_DATABASE: mysql
+      MYSQL_ROOT_PASSWORD: rudtnrud21608!
+      MYSQL_USER: kim
+      MYSQL_PASSWORD: rudtn1991!
     ports:
       - "3306:3306"
     command:

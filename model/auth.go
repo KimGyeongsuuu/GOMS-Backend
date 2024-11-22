@@ -28,10 +28,10 @@ type Authentication struct {
 }
 
 type AuthUseCase interface {
-	SignUp(ctx context.Context, input *input.SignUpInput) error
-	SignIn(ctx context.Context, input *input.SignInInput) (output.TokenOutput, error)
+	SignUp(ctx context.Context, input input.SignUpInput) error
+	SignIn(ctx context.Context, input input.SignInInput) (output.TokenOutput, error)
 	TokenReissue(ctx context.Context, refreshToken string) (output.TokenOutput, error)
-	SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error
+	SendAuthEmail(ctx context.Context, input input.SendEmaiInput) error
 	VerifyAuthCode(ctx context.Context, email string, authCode string) error
 }
 

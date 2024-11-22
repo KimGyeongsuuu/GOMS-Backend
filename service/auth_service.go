@@ -43,7 +43,7 @@ func NewAuthService(
 	}
 }
 
-func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput) error {
+func (service *AuthService) SignUp(ctx context.Context, input input.SignUpInput) error {
 
 	exists, err := service.accountRepo.ExistsByEmail(ctx, input.Email)
 	if err != nil {
@@ -60,11 +60,9 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 		return errors.New("find authentication by email is failed ")
 	}
 	if authentication == nil {
-		fmt.Println("authentication is nil")
 		return errors.New("authentication not found")
 	}
 	if !authentication.IsAuthenticated {
-		fmt.Println("authentication is false")
 		return errors.New("authentication not found")
 	}
 
@@ -90,7 +88,7 @@ func (service *AuthService) SignUp(ctx context.Context, input *input.SignUpInput
 
 }
 
-func (service *AuthService) SignIn(ctx context.Context, input *input.SignInInput) (output.TokenOutput, error) {
+func (service *AuthService) SignIn(ctx context.Context, input input.SignInInput) (output.TokenOutput, error) {
 
 	account, err := service.accountRepo.FindByEmail(ctx, input.Email)
 
@@ -153,7 +151,7 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 
 }
 
-func (service *AuthService) SendAuthEmail(ctx context.Context, input *input.SendEmaiInput) error {
+func (service *AuthService) SendAuthEmail(ctx context.Context, input input.SendEmaiInput) error {
 	verificationCode := generateVerificationCode()
 	fmt.Println(verificationCode)
 
