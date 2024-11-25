@@ -14,14 +14,14 @@ import (
 
 	"GOMS-BACKEND-GO/controller"
 	"GOMS-BACKEND-GO/model/data/input"
-	mocks "GOMS-BACKEND-GO/test/mocks/usecase"
+	"GOMS-BACKEND-GO/test/mocks"
 )
 
 func TestSignUp(t *testing.T) {
 	testcase := []struct {
 		name       string
 		payload    input.SignUpInput
-		on         func(mockAuthUseCase *mocks.AuthUseCase)
+		on         func(mockAuthUseCase *mocks.MockAuthUseCase)
 		statusCode int
 	}{
 		{
@@ -30,7 +30,7 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Password: "rudtn1991!",
 			},
-			on: func(mockAuthUseCase *mocks.AuthUseCase) {
+			on: func(mockAuthUseCase *mocks.MockAuthUseCase) {
 				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).
 					Return(errors.New("email already exists"))
 			},
@@ -42,7 +42,7 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Password: "rudtn1991!",
 			},
-			on: func(mockAuthUseCase *mocks.AuthUseCase) {
+			on: func(mockAuthUseCase *mocks.MockAuthUseCase) {
 				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).
 					Return(errors.New("authentication not found"))
 			},
@@ -54,7 +54,7 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Password: "rudtn1991!",
 			},
-			on: func(mockAuthUseCase *mocks.AuthUseCase) {
+			on: func(mockAuthUseCase *mocks.MockAuthUseCase) {
 				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).Return(nil)
 			},
 			statusCode: http.StatusCreated,
@@ -63,7 +63,7 @@ func TestSignUp(t *testing.T) {
 
 	for _, tc := range testcase {
 		t.Run(tc.name, func(t *testing.T) {
-			mockAuthUseCase := new(mocks.AuthUseCase)
+			mockAuthUseCase := new(mocks.MockAuthUseCase)
 			tc.on(mockAuthUseCase)
 
 			authController := controller.NewAuthController(mockAuthUseCase)

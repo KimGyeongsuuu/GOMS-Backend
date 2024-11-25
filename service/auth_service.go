@@ -18,20 +18,22 @@ import (
 
 type AuthService struct {
 	accountRepo        model.AccountRepository
-	tokenAdapter       *jwt.GenerateTokenAdapter
-	tokenParser        *jwt.TokenParser
+	tokenAdapter       jwt.GenerateToken
+	tokenParser        jwt.ParseToken
 	refreshTokenRepo   model.RefreshTokenRepository
 	authenticationRepo model.AuthenticationRepository
 	authCodeRepo       model.AuthCodeRepository
+	utilPassword       util.UtilPassword
 }
 
 func NewAuthService(
 	accountRepo model.AccountRepository,
-	tokenAdapter *jwt.GenerateTokenAdapter,
+	tokenAdapter jwt.GenerateToken,
+	tokenParser jwt.ParseToken,
 	refreshTokenRepo model.RefreshTokenRepository,
-	tokenParser *jwt.TokenParser,
 	authenticationRepo model.AuthenticationRepository,
 	authCodeRepo model.AuthCodeRepository,
+	utilPassword util.UtilPassword,
 ) model.AuthUseCase {
 	return &AuthService{
 		accountRepo:        accountRepo,
@@ -40,6 +42,7 @@ func NewAuthService(
 		tokenParser:        tokenParser,
 		authenticationRepo: authenticationRepo,
 		authCodeRepo:       authCodeRepo,
+		utilPassword:       utilPassword,
 	}
 }
 
@@ -67,9 +70,9 @@ func (service *AuthService) SignUp(ctx context.Context, input input.SignUpInput)
 	}
 
 	// password 인코딩
-	encodedPassword, err := util.EncodePassword(input.Password)
+	encodedPassword, err := service.utilPassword.EncodePassword(input.Password)
 	if err != nil {
-		return err
+		return errors.New("password encode error")
 	}
 
 	account := &model.Account{
@@ -100,7 +103,7 @@ func (service *AuthService) SignIn(ctx context.Context, input input.SignInInput)
 		return output.TokenOutput{}, errors.New("not found account")
 	}
 
-	isValidPassword, err := util.IsPasswordMatch(input.Password, account.Password)
+	isValidPassword, err := service.utilPassword.IsPasswordMatch(input.Password, account.Password)
 	if err != nil {
 		return output.TokenOutput{}, err
 	}
@@ -112,7 +115,7 @@ func (service *AuthService) SignIn(ctx context.Context, input input.SignInInput)
 	tokenOutput, err := service.tokenAdapter.GenerateToken(ctx, account.ID, account.Authority)
 
 	if err != nil {
-		return output.TokenOutput{}, err
+		return output.TokenOutput{}, errors.New("token generate error")
 	}
 
 	return tokenOutput, nil

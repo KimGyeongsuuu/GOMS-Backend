@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/service"
-	mocks "GOMS-BACKEND-GO/test/mocks/repository"
+	"GOMS-BACKEND-GO/test/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,6 +17,7 @@ import (
 func TestSignUp(t *testing.T) {
 	mockAccountRepo := mocks.NewAccountRepository(t)
 	mockAuthRepo := mocks.NewAuthenticationRepository(t)
+	mockPasswordUtil := mocks.NewPasswordUtil(t)
 
 	authService := service.NewAuthService(
 		mockAccountRepo,
@@ -24,6 +26,7 @@ func TestSignUp(t *testing.T) {
 		nil,
 		mockAuthRepo,
 		nil,
+		mockPasswordUtil,
 	)
 
 	testcase := []struct {
@@ -42,7 +45,7 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Name:     "kimgyeongsu",
 				Gender:   "MAN",
-				Password: "password123",
+				Password: "rudtn1991!",
 			},
 			expectedError: "email already exists",
 		},
@@ -58,9 +61,27 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Name:     "kimgyeongsu",
 				Gender:   "MAN",
-				Password: "password123",
+				Password: "rudtn1991!",
 			},
 			expectedError: "authentication not found",
+		},
+		{
+			name: "password 인코딩 중 오류 발생",
+			setupMocks: func() {
+				mockAccountRepo.On("ExistsByEmail", mock.Anything, "kskim@nurilab.com").
+					Return(false, nil).Once()
+				mockAuthRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
+					Return(&model.Authentication{IsAuthenticated: true}, nil).Once()
+				mockPasswordUtil.On("EncodePassword", "rudtn1991!").
+					Return("", errors.New("password encode error")).Once()
+			},
+			input: input.SignUpInput{
+				Email:    "kskim@nurilab.com",
+				Name:     "kimgyeongsu",
+				Gender:   "MAN",
+				Password: "rudtn1991!",
+			},
+			expectedError: "password encode error",
 		},
 		{
 			name: "회원가입 성공",
@@ -69,6 +90,8 @@ func TestSignUp(t *testing.T) {
 					Return(false, nil).Once()
 				mockAuthRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Authentication{IsAuthenticated: true}, nil).Once()
+				mockPasswordUtil.On("EncodePassword", "rudtn1991!").
+					Return("encoded_password", nil).Once()
 				mockAccountRepo.On("SaveAccount", mock.Anything, mock.AnythingOfType("*model.Account")).
 					Return(nil).Once()
 			},
@@ -76,7 +99,7 @@ func TestSignUp(t *testing.T) {
 				Email:    "kskim@nurilab.com",
 				Name:     "kimgyeongsu",
 				Gender:   "MAN",
-				Password: "password123",
+				Password: "rudtn1991!",
 			},
 			expectedError: "",
 		},
@@ -88,9 +111,9 @@ func TestSignUp(t *testing.T) {
 
 			err := authService.SignUp(context.Background(), test.input)
 
-			if test.expectedError != "" {
+			if test.expectedError != "" { // 에러 발생 O
 				assert.EqualError(t, err, test.expectedError)
-			} else {
+			} else { // 에러 발생 X
 				assert.NoError(t, err)
 			}
 

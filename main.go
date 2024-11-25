@@ -7,6 +7,7 @@ import (
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
+	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
 	"GOMS-BACKEND-GO/service"
@@ -50,8 +51,8 @@ func main() {
 	outingConfig := config.Outing()
 
 	refreshRepo := repository.NewRefreshTokenRepository(rdb)
-	tokenAdapter := jwt.NewGenerateTokenAdapter(&jwtConfig, rdb, refreshRepo)
-	tokenParser := jwt.NewTokenParser()
+	token := jwt.NewToken(&jwtConfig, rdb, refreshRepo)
+	passwordUtil := util.NewPasswordUtil()
 
 	r := gin.Default()
 
@@ -63,7 +64,7 @@ func main() {
 	authenticationRepo := repository.NewAuthenticationRepository(rdb)
 	authCodeRepo := repository.NewAuthCodeRepository(rdb)
 
-	authUseCase := service.NewAuthService(accountRepo, tokenAdapter, refreshRepo, tokenParser, authenticationRepo, authCodeRepo)
+	authUseCase := service.NewAuthService(accountRepo, token, token, refreshRepo, authenticationRepo, authCodeRepo, passwordUtil)
 	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
 	lateUseCase := service.NewLateService(lateRepo)
 	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, &outingConfig, outingRepo, lateRepo)

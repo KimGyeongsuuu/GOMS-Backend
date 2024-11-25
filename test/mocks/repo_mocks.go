@@ -2,9 +2,7 @@ package mocks
 
 import (
 	"GOMS-BACKEND-GO/model"
-	"GOMS-BACKEND-GO/model/data/constant"
 	"GOMS-BACKEND-GO/model/data/input"
-	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"testing"
 
@@ -12,27 +10,27 @@ import (
 )
 
 // Account
-type AccountRepository struct {
+type MockAccountRepository struct {
 	mock.Mock
 }
 
-func NewAccountRepository(t *testing.T) *AccountRepository {
-	return &AccountRepository{
+func NewAccountRepository(t *testing.T) *MockAccountRepository {
+	return &MockAccountRepository{
 		Mock: mock.Mock{},
 	}
 }
 
-func (a *AccountRepository) SaveAccount(ctx context.Context, account *model.Account) error {
+func (a *MockAccountRepository) SaveAccount(ctx context.Context, account *model.Account) error {
 	args := a.Called(ctx, account)
 	return args.Error(0)
 }
 
-func (a *AccountRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
+func (a *MockAccountRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	args := a.Called(ctx, email)
 	return args.Bool(0), args.Error(1)
 }
 
-func (a *AccountRepository) FindByEmail(ctx context.Context, email string) (*model.Account, error) {
+func (a *MockAccountRepository) FindByEmail(ctx context.Context, email string) (*model.Account, error) {
 	args := a.Called(ctx, email)
 	if result := args.Get(0); result != nil {
 		return result.(*model.Account), args.Error(1)
@@ -40,7 +38,7 @@ func (a *AccountRepository) FindByEmail(ctx context.Context, email string) (*mod
 	return nil, args.Error(1)
 }
 
-func (a *AccountRepository) FindByAccountID(ctx context.Context, accountID uint64) (*model.Account, error) {
+func (a *MockAccountRepository) FindByAccountID(ctx context.Context, accountID uint64) (*model.Account, error) {
 	args := a.Called(ctx, accountID)
 	if result := args.Get(0); result != nil {
 		return result.(*model.Account), args.Error(1)
@@ -48,22 +46,22 @@ func (a *AccountRepository) FindByAccountID(ctx context.Context, accountID uint6
 	return nil, args.Error(1)
 }
 
-func (a *AccountRepository) FindAllAccount(ctx context.Context) ([]model.Account, error) {
+func (a *MockAccountRepository) FindAllAccount(ctx context.Context) ([]model.Account, error) {
 	args := a.Called(ctx)
 	return args.Get(0).([]model.Account), args.Error(1)
 }
 
-func (a *AccountRepository) FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]model.Account, error) {
+func (a *MockAccountRepository) FindByAccountByStudentInfo(ctx context.Context, searchAccountInput *input.SearchAccountInput) ([]model.Account, error) {
 	args := a.Called(ctx, searchAccountInput)
 	return args.Get(0).([]model.Account), args.Error(1)
 }
 
-func (a *AccountRepository) UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error {
+func (a *MockAccountRepository) UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error {
 	args := a.Called(ctx, authorityInput)
 	return args.Error(0)
 }
 
-func (a *AccountRepository) DeleteAccount(ctx context.Context, account *model.Account) error {
+func (a *MockAccountRepository) DeleteAccount(ctx context.Context, account *model.Account) error {
 	args := a.Called(ctx, account)
 	return args.Error(0)
 }
@@ -149,6 +147,12 @@ type OutingRepository struct {
 	mock.Mock
 }
 
+func NewOutingRepository(t *testing.T) *OutingRepository {
+	return &OutingRepository{
+		Mock: mock.Mock{},
+	}
+}
+
 func (o *OutingRepository) SaveOutingStudnet(ctx context.Context, outing *model.Outing) error {
 	args := o.Called(ctx, outing)
 	return args.Error(0)
@@ -178,22 +182,4 @@ func (o *OutingRepository) FindByOutingAccountNameContaining(ctx context.Context
 		return result.([]model.Outing), args.Error(1)
 	}
 	return nil, args.Error(1)
-}
-
-// token
-type GenerateTokenAdapter struct {
-	mock.Mock
-}
-
-func NewGenerateTokenAdapter() *GenerateTokenAdapter {
-	return &GenerateTokenAdapter{}
-}
-
-func (m *GenerateTokenAdapter) GenerateToken(ctx context.Context, accountId uint64, authority constant.Authority) (output.TokenOutput, error) {
-	args := m.Called(ctx, accountId, authority)
-
-	if result := args.Get(0); result != nil {
-		return result.(output.TokenOutput), args.Error(1)
-	}
-	return output.TokenOutput{}, args.Error(1)
 }
