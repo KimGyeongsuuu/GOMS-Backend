@@ -5,32 +5,15 @@ import (
 	"GOMS-BACKEND-GO/model/data/constant"
 	"GOMS-BACKEND-GO/model/data/input"
 	"GOMS-BACKEND-GO/model/data/output"
-	"GOMS-BACKEND-GO/service"
-	"GOMS-BACKEND-GO/test/mocks"
 	"context"
 	"errors"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func TestSignIn(t *testing.T) {
-	mockAccountRepo := mocks.NewAccountRepository(t)
-	mockTokenAdapter := mocks.NewGenerateTokenAdapter(t)
-	mockPasswordUtil := mocks.NewPasswordUtil(t)
-
-	authService := service.NewAuthService(
-		mockAccountRepo,
-		mockTokenAdapter,
-		nil,
-		nil,
-		nil,
-		nil,
-		mockPasswordUtil,
-	)
-
+func (suite *AuthServiceTestSuite) TestSignIn() {
 	testcase := []struct {
 		name           string
 		setupMocks     func()
@@ -41,7 +24,7 @@ func TestSignIn(t *testing.T) {
 		{
 			name: "존재하지 않는 사용자 계정입니다.",
 			setupMocks: func() {
-				mockAccountRepo.On("FindByEmail", mock.Anything, "kimks@nurilab.com").
+				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kimks@nurilab.com").
 					Return(nil, nil).Once()
 			},
 			input: input.SignInInput{
@@ -55,13 +38,13 @@ func TestSignIn(t *testing.T) {
 			name: "비밀번호가 일치하지 않습니다.",
 			setupMocks: func() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
-				mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
+				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
 						ID:       1,
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
-				mockPasswordUtil.On("IsPasswordMatch", "wrongPassword", mock.Anything).
+				suite.mockPasswordUtil.On("IsPasswordMatch", "wrongPassword", mock.Anything).
 					Return(false, nil).Once()
 			},
 			input: input.SignInInput{
@@ -75,15 +58,15 @@ func TestSignIn(t *testing.T) {
 			name: "토큰 생성 중 오류 발생",
 			setupMocks: func() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
-				mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
+				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
 						ID:       1,
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
-				mockPasswordUtil.On("IsPasswordMatch", mock.Anything, mock.Anything).
+				suite.mockPasswordUtil.On("IsPasswordMatch", mock.Anything, mock.Anything).
 					Return(true, nil).Once()
-				mockTokenAdapter.On("GenerateToken", mock.Anything, uint64(1), mock.Anything).
+				suite.mockTokenAdapter.On("GenerateToken", mock.Anything, uint64(1), mock.Anything).
 					Return(output.TokenOutput{}, errors.New("token generate error")).Once()
 			},
 			input: input.SignInInput{
@@ -97,15 +80,15 @@ func TestSignIn(t *testing.T) {
 			name: "로그인 성공",
 			setupMocks: func() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
-				mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
+				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
 						ID:       1,
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
-				mockPasswordUtil.On("IsPasswordMatch", "rudtn1991!", mock.Anything).
+				suite.mockPasswordUtil.On("IsPasswordMatch", "rudtn1991!", mock.Anything).
 					Return(true, nil).Once()
-				mockTokenAdapter.On("GenerateToken", mock.Anything, uint64(1), mock.Anything).
+				suite.mockTokenAdapter.On("GenerateToken", mock.Anything, uint64(1), mock.Anything).
 					Return(output.TokenOutput{
 						AccessToken:  "accessToken",
 						RefreshToken: "refreshToken",
@@ -125,21 +108,21 @@ func TestSignIn(t *testing.T) {
 		},
 	}
 	for _, test := range testcase {
-		t.Run(test.name, func(t *testing.T) {
+		suite.Run(test.name, func() {
 			test.setupMocks()
 
-			actualOutput, err := authService.SignIn(context.Background(), test.input)
-			assert.Equal(t, test.expectedOutput, actualOutput)
+			actualOutput, err := suite.authUsecase.SignIn(context.Background(), test.input)
+			assert.Equal(suite.T(), test.expectedOutput, actualOutput)
 
 			if test.expectedError != "" {
-				assert.EqualError(t, err, test.expectedError)
+				assert.EqualError(suite.T(), err, test.expectedError)
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(suite.T(), err)
 			}
 
-			mockAccountRepo.AssertExpectations(t)
-			mockTokenAdapter.AssertExpectations(t)
-			mockPasswordUtil.AssertExpectations(t)
+			suite.mockAccountRepo.AssertExpectations(suite.T())
+			suite.mockTokenAdapter.AssertExpectations(suite.T())
+			suite.mockPasswordUtil.AssertExpectations(suite.T())
 		})
 	}
 }
