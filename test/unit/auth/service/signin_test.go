@@ -107,11 +107,9 @@ func TestSignIn(t *testing.T) {
 					Return(true, nil).Once()
 				mockTokenAdapter.On("GenerateToken", mock.Anything, uint64(1), mock.Anything).
 					Return(output.TokenOutput{
-						AccessToken:     "accessToken",
-						RefreshToken:    "refreshToken",
-						AccessTokenExp:  "2024-01-01 00:00:00",
-						RefreshTokenExp: "2024-01-01 00:00:00",
-						Authority:       constant.ROLE_STUDENT,
+						AccessToken:  "accessToken",
+						RefreshToken: "refreshToken",
+						Authority:    constant.ROLE_STUDENT,
 					}, nil).Once()
 			},
 			input: input.SignInInput{
@@ -119,11 +117,9 @@ func TestSignIn(t *testing.T) {
 				Password: "rudtn1991!",
 			},
 			expectedOutput: output.TokenOutput{
-				AccessToken:     "accessToken",
-				RefreshToken:    "refreshToken",
-				AccessTokenExp:  "2024-01-01 00:00:00",
-				RefreshTokenExp: "2024-01-01 00:00:00",
-				Authority:       constant.ROLE_STUDENT,
+				AccessToken:  "accessToken",
+				RefreshToken: "refreshToken",
+				Authority:    constant.ROLE_STUDENT,
 			},
 			expectedError: "",
 		},
