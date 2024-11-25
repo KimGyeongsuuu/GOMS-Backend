@@ -66,22 +66,22 @@ func (a *MockAccountRepository) DeleteAccount(ctx context.Context, account *mode
 	return args.Error(0)
 }
 
-type AuthenticationRepository struct {
+type MockAuthenticationRepository struct {
 	mock.Mock
 }
 
-func NewAuthenticationRepository(t *testing.T) *AuthenticationRepository {
-	return &AuthenticationRepository{
+func NewAuthenticationRepository(t *testing.T) *MockAuthenticationRepository {
+	return &MockAuthenticationRepository{
 		Mock: mock.Mock{},
 	}
 }
 
-func (a *AuthenticationRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
+func (a *MockAuthenticationRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	args := a.Called(ctx, email)
 	return args.Bool(0), args.Error(1)
 }
 
-func (a *AuthenticationRepository) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
+func (a *MockAuthenticationRepository) FindByEmail(ctx context.Context, email string) (*model.Authentication, error) {
 	args := a.Called(ctx, email)
 	if result := args.Get(0); result != nil {
 		return result.(*model.Authentication), args.Error(1)
@@ -89,7 +89,7 @@ func (a *AuthenticationRepository) FindByEmail(ctx context.Context, email string
 	return nil, args.Error(1)
 }
 
-func (a *AuthenticationRepository) SaveAuthentication(ctx context.Context, auth *model.Authentication) error {
+func (a *MockAuthenticationRepository) SaveAuthentication(ctx context.Context, auth *model.Authentication) error {
 	args := a.Called(ctx, auth)
 	return args.Error(0)
 }

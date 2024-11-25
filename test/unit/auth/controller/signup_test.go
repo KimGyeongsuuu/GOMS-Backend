@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +16,7 @@ import (
 	"GOMS-BACKEND-GO/test/mocks"
 )
 
-func TestSignUp(t *testing.T) {
+func (suite *AuthControllerTestSuite) TestSignUp() {
 	testcase := []struct {
 		name       string
 		payload    input.SignUpInput
@@ -63,7 +62,7 @@ func TestSignUp(t *testing.T) {
 	}
 
 	for _, tc := range testcase {
-		t.Run(tc.name, func(t *testing.T) {
+		suite.Run(tc.name, func() {
 			mockAuthUseCase := new(mocks.MockAuthUseCase)
 			tc.on(mockAuthUseCase)
 
@@ -73,15 +72,15 @@ func TestSignUp(t *testing.T) {
 			router.POST("/signup", authController.SignUp)
 
 			body, err := json.Marshal(tc.payload)
-			assert.NoError(t, err)
+			assert.NoError(suite.T(), err)
 
 			req := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			assert.Equal(t, tc.statusCode, rec.Code)
-			mockAuthUseCase.AssertExpectations(t)
+			assert.Equal(suite.T(), tc.statusCode, rec.Code)
+			mockAuthUseCase.AssertExpectations(suite.T())
 		})
 	}
 
