@@ -28,14 +28,14 @@ func (controller *AuthController) SignUp(ctx *gin.Context) {
 	}
 
 	if err := controller.authUseCase.SignUp(context.Background(), input); err != nil {
-		if err.Error() == "email already exists" {
+		switch err.Error() {
+		case "email already exists":
 			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
-		} else if err.Error() == "authentication not found" {
+		case "authentication not found":
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
 	ctx.Status(http.StatusCreated)
 }
@@ -50,10 +50,21 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 
 	token, err := controller.authUseCase.SignIn(context.Background(), input)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
+		switch err.Error() {
+		case "not found account":
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		case "mis match password":
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		case "token generate error":
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		default:
+			ctx.JSON(http.StatusBadGateway, gin.H{"error": "hello bad gate way"})
+			return
+		}
 	}
-
 	ctx.JSON(http.StatusOK, gin.H{"TokenOutput": token})
 }
 

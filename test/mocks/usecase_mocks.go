@@ -19,7 +19,12 @@ func (m *MockAuthUseCase) SignUp(ctx context.Context, input input.SignUpInput) e
 
 func (m *MockAuthUseCase) SignIn(ctx context.Context, input input.SignInInput) (output.TokenOutput, error) {
 	args := m.Called(ctx, input)
-	return args.Get(0).(output.TokenOutput), args.Error(1)
+
+	if tokenOutput, ok := args.Get(0).(output.TokenOutput); ok {
+		return tokenOutput, nil
+	}
+
+	return output.TokenOutput{}, args.Error(0)
 }
 
 func (m *MockAuthUseCase) TokenReissue(ctx context.Context, refreshToken string) (output.TokenOutput, error) {

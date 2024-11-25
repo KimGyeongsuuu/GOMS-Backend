@@ -94,9 +94,8 @@ func (service *AuthService) SignUp(ctx context.Context, input input.SignUpInput)
 func (service *AuthService) SignIn(ctx context.Context, input input.SignInInput) (output.TokenOutput, error) {
 
 	account, err := service.accountRepo.FindByEmail(ctx, input.Email)
-
 	if err != nil {
-		return output.TokenOutput{}, err
+		return output.TokenOutput{}, errors.New("not found account")
 	}
 
 	if account == nil {
@@ -105,7 +104,7 @@ func (service *AuthService) SignIn(ctx context.Context, input input.SignInInput)
 
 	isValidPassword, err := service.utilPassword.IsPasswordMatch(input.Password, account.Password)
 	if err != nil {
-		return output.TokenOutput{}, err
+		return output.TokenOutput{}, errors.New("mis match password")
 	}
 
 	if !isValidPassword {

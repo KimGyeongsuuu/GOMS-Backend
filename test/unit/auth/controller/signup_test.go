@@ -55,7 +55,8 @@ func TestSignUp(t *testing.T) {
 				Password: "rudtn1991!",
 			},
 			on: func(mockAuthUseCase *mocks.MockAuthUseCase) {
-				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).Return(nil)
+				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).
+					Return(nil)
 			},
 			statusCode: http.StatusCreated,
 		},
