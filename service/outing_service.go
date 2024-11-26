@@ -1,11 +1,12 @@
 package service
 
 import (
+	"GOMS-BACKEND-GO/global/error/status"
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
-	"errors"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,16 +37,16 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 	existsOutingUUID, err := service.outingUUIDRepo.ExistsByOutingUUID(ctx, outingUUID)
 
 	if err != nil {
-		return errors.New("failed to outing UUID")
+		return status.NewError(http.StatusInternalServerError, "failed to outing UUID")
 	}
 	if !existsOutingUUID {
-		return errors.New("invalid outing UUID")
+		return status.NewError(http.StatusBadRequest, "failed to outing UUID")
 	}
 
 	// account id를 기반으로 account 추출
 	account, err := service.accountRepo.FindByAccountID(ctx, accountID)
 	if err != nil {
-		return errors.New("failed to find account")
+		return status.NewError(http.StatusInternalServerError, "failed to find account")
 	}
 
 	// 이미 외출한 학생인지 검증
@@ -70,7 +71,7 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 func (service *OutingService) FindAllOutingStudent(ctx context.Context) ([]output.OutingStudentOutput, error) {
 	outings, err := service.outingRepo.FindAllOuting(ctx)
 	if err != nil {
-		return nil, err
+		return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
 	}
 
 	var outingStudentOutputs []output.OutingStudentOutput
@@ -79,7 +80,7 @@ func (service *OutingService) FindAllOutingStudent(ctx context.Context) ([]outpu
 		account, err := service.accountRepo.FindByAccountID(ctx, outing.AccountID)
 
 		if err != nil {
-			return nil, err
+			return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
 		}
 
 		outingStudentOutput := output.OutingStudentOutput{
@@ -101,7 +102,7 @@ func (service *OutingService) FindAllOutingStudent(ctx context.Context) ([]outpu
 func (service *OutingService) CountAllOutingStudent(ctx context.Context) (int, error) {
 	outings, err := service.outingRepo.FindAllOuting(ctx)
 	if err != nil {
-		return 0, err
+		return 0, status.NewError(http.StatusInternalServerError, "failed to find account")
 	}
 
 	return len(outings), err
@@ -112,7 +113,7 @@ func (service *OutingService) SearchOutingStudent(ctx context.Context, name stri
 	outings, err := service.outingRepo.FindByOutingAccountNameContaining(ctx, name)
 
 	if err != nil {
-		return nil, err
+		return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
 	}
 
 	var outingStudentOutputs []output.OutingStudentOutput
@@ -121,7 +122,7 @@ func (service *OutingService) SearchOutingStudent(ctx context.Context, name stri
 		account, err := service.accountRepo.FindByAccountID(ctx, outing.AccountID)
 
 		if err != nil {
-			return nil, err
+			return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
 		}
 
 		outingStudentOutput := output.OutingStudentOutput{

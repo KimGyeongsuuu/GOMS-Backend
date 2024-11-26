@@ -26,7 +26,7 @@ func (controller *StudentCouncilController) CreateOuting(ctx *gin.Context) {
 	outingUUID, err := controller.studentCouncilUseCase.CreateOuting(ctx)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (controller *StudentCouncilController) FindOutingList(ctx *gin.Context) {
 	accounts, err := controller.studentCouncilUseCase.FindAllAccount(ctx)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (controller *StudentCouncilController) SearchAccountByInfo(ctx *gin.Context
 
 	accounts, err := controller.studentCouncilUseCase.SearchAccount(ctx, &input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"eror": err.Error()})
+		ctx.Error(err)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"accounts": accounts})
@@ -102,14 +102,14 @@ func (controller *StudentCouncilController) UpdateAuthority(ctx *gin.Context) {
 	var input input.UpdateAccountAuthorityInput
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
 	err := controller.studentCouncilUseCase.UpdateAccountAuthority(ctx, &input)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -122,13 +122,13 @@ func (controller *StudentCouncilController) AddBlackList(ctx *gin.Context) {
 	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid accountID"})
+		ctx.Error(err)
 		return
 	}
 
 	err = controller.studentCouncilUseCase.AddBlackList(ctx, accountID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -140,13 +140,13 @@ func (controller *StudentCouncilController) DeleteBlackList(ctx *gin.Context) {
 
 	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid accountID"})
+		ctx.Error(err)
 		return
 	}
 
 	err = controller.studentCouncilUseCase.ExcludeBlackList(ctx, accountID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 

@@ -21,11 +21,11 @@ func NewAccountService(accountRepo model.AccountRepository) *AccountService {
 func (service *AccountService) WithDrawAccount(c *gin.Context, ctx context.Context) error {
 	accountID, err := util.GetCurrentAccountID(c)
 	if err != nil {
-		return nil
+		return err
 	}
 	account, err := service.accountRepo.FindByAccountID(ctx, accountID)
 	if err != nil {
-		return nil
+		return err
 	}
 	return service.accountRepo.DeleteAccount(ctx, account)
 }

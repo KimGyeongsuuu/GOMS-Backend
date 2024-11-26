@@ -1,10 +1,12 @@
 package service
 
 import (
+	"GOMS-BACKEND-GO/global/error/status"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"fmt"
+	"net/http"
 )
 
 type LateService struct {
@@ -27,8 +29,7 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 	fmt.Println(len(lates))
 	for _, late := range lates {
 		if late.Account == nil {
-			fmt.Println(late.Account)
-			return nil, fmt.Errorf("late.Account is nil for late ID: %d", late.Account.ID)
+			return nil, status.NewError(http.StatusNotFound, fmt.Sprintf("late.Account is nil for late ID: %d", late.Account.ID))
 		}
 
 		output := output.LateOutput{

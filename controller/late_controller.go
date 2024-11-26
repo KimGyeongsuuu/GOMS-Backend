@@ -20,7 +20,7 @@ func NewLateController(lateUseCase model.LateUseCase) *LateController {
 func (contoller *LateController) GetLateStudentTop3(ctx *gin.Context) {
 	lates, err := contoller.lateUseCase.GetTop3LateStudent(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
