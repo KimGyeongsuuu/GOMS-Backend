@@ -25,12 +25,12 @@ func (controller *OutingController) OutingStudent(ctx *gin.Context) {
 	outingUUID, err := uuid.Parse(outingUUIDStr)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
 	if err := controller.outingUseCase.OutingStudent(ctx, context.Background(), outingUUID); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (controller *OutingController) ListOutingStudent(ctx *gin.Context) {
 	outings, err := controller.outingUseCase.FindAllOutingStudent(ctx)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (controller *OutingController) CountOutingStudent(ctx *gin.Context) {
 	outingsCount, err := controller.outingUseCase.CountAllOutingStudent(ctx)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"outing-students-count": outingsCount})
@@ -67,7 +67,7 @@ func (controller *OutingController) SearchOutingStudent(ctx *gin.Context) {
 	outings, err := controller.outingUseCase.SearchOutingStudent(ctx, name)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"outing-students": outings})

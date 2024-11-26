@@ -2,12 +2,14 @@ package service
 
 import (
 	"GOMS-BACKEND-GO/global/config"
+	"GOMS-BACKEND-GO/global/error/status"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/input"
+	"fmt"
+	"net/http"
+
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,7 +46,7 @@ func (service *StudentCouncilService) CreateOuting(ctx context.Context) (uuid.UU
 
 	outingUUID, err := service.outingUUIDRepo.CreateOutingUUID(ctx)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, status.NewError(http.StatusInternalServerError, "create outing uuid error")
 	}
 
 	return outingUUID, nil
@@ -57,7 +59,7 @@ func (service *StudentCouncilService) FindAllAccount(ctx context.Context) ([]out
 	var accountOutputs []output.AccountOutput
 
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	for _, account := range accounts {
@@ -83,7 +85,7 @@ func (service *StudentCouncilService) SearchAccount(ctx context.Context, account
 	accounts, err := service.accountRepo.FindByAccountByStudentInfo(ctx, accountInput)
 
 	if err != nil {
-		return nil, err
+		return nil, status.NewError(http.StatusInternalServerError, "search account error")
 	}
 	var accountOutputs []output.AccountOutput
 
@@ -109,7 +111,7 @@ func (service *StudentCouncilService) UpdateAccountAuthority(ctx context.Context
 	err := service.accountRepo.UpdateAccountAuthority(ctx, authorityInput)
 
 	if err != nil {
-		return err
+		return status.NewError(http.StatusInternalServerError, "update account authority error")
 	}
 
 	return nil
@@ -131,10 +133,10 @@ func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountI
 func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, accountID uint64) error {
 	outingBlackList, err := service.blackListRepo.FindBlackListByAccountID(ctx, accountID)
 	if err != nil {
-		return nil
+		return status.NewError(http.StatusInternalServerError, fmt.Sprintf("blacklist not found for account ID: %d", accountID))
 	}
 	if outingBlackList == nil {
-		return fmt.Errorf("blacklist not found for account ID: %d", accountID)
+		return status.NewError(http.StatusInternalServerError, fmt.Sprintf("blacklist not found for account ID: %d", accountID))
 	}
 
 	service.blackListRepo.DeleteBlackList(ctx, outingBlackList)
@@ -144,10 +146,11 @@ func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, acco
 func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, accountID uint64) error {
 	exists, err := service.outingRepo.ExistsOutingByAccountID(ctx, accountID)
 	if err != nil {
-		return nil
+		return status.NewError(http.StatusInternalServerError, "delete outing student error")
 	}
 	if !exists {
-		return errors.New("not outing student")
+		return status.NewError(http.StatusNotFound, "not outing student")
+
 	}
 
 	deleteErr := service.outingRepo.DeleteOutingByAccountID(ctx, accountID)

@@ -17,7 +17,7 @@ import (
 )
 
 func (suite *AuthControllerTestSuite) TestSignUp() {
-	testcase := []struct {
+	testcases := []struct {
 		name       string
 		payload    input.SignUpInput
 		on         func(mockAuthUseCase *mocks.MockAuthUseCase)
@@ -33,7 +33,7 @@ func (suite *AuthControllerTestSuite) TestSignUp() {
 				mockAuthUseCase.On("SignUp", mock.Anything, mock.AnythingOfType("input.SignUpInput")).
 					Return(errors.New("email already exists"))
 			},
-			statusCode: http.StatusConflict,
+			statusCode: http.StatusConflict, // conroller에서 발생할 것이라고 예상되는 상태코드
 		},
 		{
 			name: "인증되지 않은 사용자 Email 입니다.",
@@ -61,25 +61,25 @@ func (suite *AuthControllerTestSuite) TestSignUp() {
 		},
 	}
 
-	for _, tc := range testcase {
-		suite.Run(tc.name, func() {
-			mockAuthUseCase := new(mocks.MockAuthUseCase)
-			tc.on(mockAuthUseCase)
+	for _, test := range testcases {
+		suite.Run(test.name, func() {
+			mockAuthUseCase := new(mocks.MockAuthUseCase) // mock 메서드 생성 및 설정
+			test.on(mockAuthUseCase)
 
-			authController := controller.NewAuthController(mockAuthUseCase)
-			gin.SetMode(gin.TestMode)
+			authController := controller.NewAuthController(mockAuthUseCase) // controller를 생성하고 mock 객체 주입
+			gin.SetMode(gin.TestMode)                                       // gin을 통해 라우터 설정
 			router := gin.Default()
-			router.POST("/signup", authController.SignUp)
+			router.POST("/signup", authController.SignUp) // 라우터에 sign up 등록
 
-			body, err := json.Marshal(tc.payload)
-			assert.NoError(suite.T(), err)
+			body, err := json.Marshal(test.payload) // payload를 json로 변환하고 body에 등록
+			assert.NoError(suite.T(), err)          // 에러가 발생하지 않는다는 코드
 
 			req := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
-			assert.Equal(suite.T(), tc.statusCode, rec.Code)
+			assert.Equal(suite.T(), test.statusCode, rec.Code) // 실제 발생 상태코드와, 테스트코드에서 작성해놓은 statusCode가 같다는 Equal
 			mockAuthUseCase.AssertExpectations(suite.T())
 		})
 	}

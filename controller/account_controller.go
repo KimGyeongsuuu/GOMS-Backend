@@ -20,7 +20,7 @@ func NewAccountController(accountUseCase model.AccountUseCase) *AccountControlle
 
 func (controller *AccountController) WithDraw(ctx *gin.Context) {
 	if err := controller.accountUseCase.WithDrawAccount(ctx, context.Background()); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 	ctx.Status(http.StatusNoContent)

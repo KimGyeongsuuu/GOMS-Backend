@@ -107,7 +107,8 @@ func (suite *AuthControllerTestSuite) TestSignIn() {
 			if tc.statusCode == http.StatusOK {
 				var result map[string]output.TokenOutput
 
-				err := json.Unmarshal(rec.Body.Bytes(), &result)
+				// fmt.Println(string(rec.Body.Bytes()))
+				err := json.Unmarshal(rec.Body.Bytes(), &result) // rec.Body의 데이터를 result로 매핑
 				assert.NoError(suite.T(), err)
 
 				actualOutput := result["TokenOutput"]
