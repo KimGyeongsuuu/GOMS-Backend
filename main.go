@@ -7,6 +7,7 @@ import (
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
+	"GOMS-BACKEND-GO/global/filter"
 	"GOMS-BACKEND-GO/global/util"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
@@ -47,6 +48,8 @@ func main() {
 		log.Fatal("Failed to migrate tables:", err)
 	}
 
+	errorFilter := filter.NewErrorFilter()
+
 	jwtConfig := config.JWT()
 	outingConfig := config.Outing()
 
@@ -77,6 +80,7 @@ func main() {
 	accountController := controller.NewAccountController(accountUseCase)
 
 	r.Use(middleware.AccountMiddleware(accountRepo, []byte(jwtConfig.AccessSecret)))
+	r.Use(errorFilter.Register())
 
 	health := r.Group("/health")
 	{
