@@ -48,6 +48,7 @@ func NewAuthService(
 
 func (service *AuthService) SignUp(ctx context.Context, input input.SignUpInput) error {
 
+	// 메일 중복 검사
 	exists, err := service.accountRepo.ExistsByEmail(ctx, input.Email)
 	if err != nil {
 		return errors.New("failed to check email existence")
