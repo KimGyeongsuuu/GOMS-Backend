@@ -22,7 +22,7 @@ func NewLateService(lateRepo model.LateRepository) *LateService {
 func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.LateOutput, error) {
 	lates, err := service.lateRepo.FindTop3ByOrderByAccountDesc(ctx)
 	if err != nil {
-		return nil, err
+		return nil, status.NewError(http.StatusInternalServerError, "find top 3 by order by account desc error")
 	}
 
 	var outputList []output.LateOutput

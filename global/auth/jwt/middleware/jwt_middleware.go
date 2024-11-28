@@ -78,7 +78,7 @@ func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []by
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized2"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
