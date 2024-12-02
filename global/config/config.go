@@ -27,6 +27,7 @@ func Data() DataConfig {
 type DataConfig struct {
 	Mysql MysqlConfig `yaml:"mysql"`
 	Redis RedisConfig `yaml:"redis"`
+	Mongo MongoConfig `yaml:"mongo"`
 }
 
 type MysqlConfig struct {
@@ -40,6 +41,14 @@ type MysqlConfig struct {
 type RedisConfig struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
+}
+
+type MongoConfig struct {
+	User string `yaml:"user"`
+	Pass string `yaml:"pass"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
+	Db   string `yaml:"db"`
 }
 
 func Outing() OutingConfig {

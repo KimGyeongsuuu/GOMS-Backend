@@ -4,12 +4,13 @@ import (
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Late struct {
-	LateID    uint64
-	AccountID uint64
-	Account   *Account `gorm:"foreignKey:AccountID"`
+	LateID    primitive.ObjectID `bson:"_id,omitempty"`
+	AccountID primitive.ObjectID `bson:"account_id"`
 	CreatedAt time.Time
 }
 

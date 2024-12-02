@@ -3,13 +3,12 @@ package main
 import (
 	"GOMS-BACKEND-GO/controller"
 	"GOMS-BACKEND-GO/database/cache"
-	"GOMS-BACKEND-GO/database/mysql"
+	"GOMS-BACKEND-GO/database/mongo"
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
 	"GOMS-BACKEND-GO/global/filter"
 	"GOMS-BACKEND-GO/global/util"
-	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/repository"
 	"GOMS-BACKEND-GO/service"
 	"context"
@@ -36,17 +35,25 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	db, err := mysql.NewMySQLConnection()
-	if err != nil {
-		log.Fatal("Failed to connect to the database:", err)
-	}
+	// db, err := mysql.NewMySQLConnection()
+	// if err != nil {
+	// 	log.Fatal("Failed to connect to the database:", err)
+	// }
 
 	rdb = cache.NewRedisClient(ctx)
 
-	err = db.AutoMigrate(&model.Account{}, &model.Outing{}, &model.Late{})
+	_, mongodb, err := mongo.NewMongoConnection()
 	if err != nil {
-		log.Fatal("Failed to migrate tables:", err)
+		log.Fatal("Failed to connect to MongoDB:", err)
 	}
+
+	// collectionNames := []string{"outings", "accounts", "lates"}
+	// mongo.CreateCollections(mongodb, collectionNames)
+
+	// err = db.AutoMigrate(&model.Account{}, &model.Outing{}, &model.Late{})
+	// if err != nil {
+	// 	log.Fatal("Failed to migrate tables:", err)
+	// }
 
 	errorFilter := filter.NewErrorFilter()
 
@@ -59,19 +66,27 @@ func main() {
 
 	r := gin.Default()
 
-	accountRepo := repository.NewAccountRepository(db)
+	// mongo
+	mongoAccountRepo := repository.NewMongoAccountRepository(mongodb)
+	mongoOutingRepo := repository.NewMongoOutingRepository(mongodb)
+	mongoLateRepo := repository.NewMongoLateRepository(mongodb)
+
+	// mysql
+	// accountRepo := repository.NewAccountRepository(db)
+	// outingRepo := repository.NewOutingRepository(db)
+	// lateRepo := repository.NewLateRepository(db)
+
+	// redis
 	blackListRepo := repository.NewBlackListRepository(rdb)
 	outingUUIDRepo := repository.NewOutingUUIDRepository(rdb, &outingConfig)
-	outingRepo := repository.NewOutingRepository(db)
-	lateRepo := repository.NewLateRepository(db)
 	authenticationRepo := repository.NewAuthenticationRepository(rdb)
 	authCodeRepo := repository.NewAuthCodeRepository(rdb)
 
-	authUseCase := service.NewAuthService(accountRepo, token, token, refreshRepo, authenticationRepo, authCodeRepo, passwordUtil)
-	outingUseCase := service.NewOutingService(outingRepo, accountRepo, outingUUIDRepo)
-	lateUseCase := service.NewLateService(lateRepo)
-	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, accountRepo, blackListRepo, &outingConfig, outingRepo, lateRepo)
-	accountUseCase := service.NewAccountService(accountRepo)
+	authUseCase := service.NewAuthService(mongoAccountRepo, token, token, refreshRepo, authenticationRepo, authCodeRepo, passwordUtil)
+	outingUseCase := service.NewOutingService(mongoOutingRepo, mongoAccountRepo, outingUUIDRepo)
+	lateUseCase := service.NewLateService(mongoLateRepo, mongoAccountRepo)
+	studentCouncilUseCase := service.NewStudentCouncilService(outingUUIDRepo, mongoAccountRepo, blackListRepo, &outingConfig, mongoOutingRepo, mongoLateRepo)
+	accountUseCase := service.NewAccountService(mongoAccountRepo)
 
 	authController := controller.NewAuthController(authUseCase)
 	outingController := controller.NewOutingController(outingUseCase)
@@ -79,7 +94,7 @@ func main() {
 	studentCouncilController := controller.NewStudentCouncilController(studentCouncilUseCase)
 	accountController := controller.NewAccountController(accountUseCase)
 
-	r.Use(middleware.AccountMiddleware(accountRepo, []byte(jwtConfig.AccessSecret)))
+	r.Use(middleware.AccountMiddleware(mongoAccountRepo, []byte(jwtConfig.AccessSecret)))
 	r.Use(errorFilter.Register())
 
 	health := r.Group("/health")
@@ -102,7 +117,7 @@ func main() {
 	{
 		studentCouncil.Use(middleware.AuthorizeRoleJWT([]byte(jwtConfig.AccessSecret), "ROLE_STUDENT_COUNCIL"))
 		studentCouncil.POST("outing", studentCouncilController.CreateOuting)
-		studentCouncil.GET("accounts", studentCouncilController.FindOutingList)
+		studentCouncil.GET("accounts", studentCouncilController.FindAccountList)
 		studentCouncil.GET("search", studentCouncilController.SearchAccountByInfo)
 		studentCouncil.PATCH("authority", studentCouncilController.UpdateAuthority)
 		studentCouncil.POST("black-list/:accountID", studentCouncilController.AddBlackList)

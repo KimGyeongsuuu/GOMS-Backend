@@ -1,9 +1,13 @@
 package output
 
-import "GOMS-BACKEND-GO/model/data/constant"
+import (
+	"GOMS-BACKEND-GO/model/data/constant"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type AccountOutput struct {
-	AccountID   uint64
+	AccountID   primitive.ObjectID
 	Name        string
 	Major       constant.Major
 	Grade       int
@@ -14,7 +18,7 @@ type AccountOutput struct {
 }
 
 type LateOutput struct {
-	AccountID  uint64
+	AccountID  primitive.ObjectID
 	Name       string
 	Major      constant.Major
 	Grade      int

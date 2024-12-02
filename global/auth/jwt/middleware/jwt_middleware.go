@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func AuthorizeRoleJWT(secret []byte, requiredRole string) gin.HandlerFunc {
@@ -53,7 +54,7 @@ func AuthorizeRoleJWT(secret []byte, requiredRole string) gin.HandlerFunc {
 	}
 }
 
-func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []byte) gin.HandlerFunc {
+func AccountMiddleware(accountRepo *repository.MongoAccountRepository, secretKey []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -82,16 +83,22 @@ func AccountMiddleware(accountRepo *repository.AccountRepository, secretKey []by
 			c.Abort()
 			return
 		}
-		accountID, ok := claims["sub"].(float64)
+
+		accountID, ok := claims["sub"].(string)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "not found account id in claims"})
 			c.Abort()
 			return
 		}
 
-		accountIDUint64 := uint64(accountID)
+		accountIDObjectID, err := primitive.ObjectIDFromHex(accountID)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid account id format"})
+			c.Abort()
+			return
+		}
 
-		account, err := accountRepo.FindByAccountID(c.Request.Context(), accountIDUint64)
+		account, err := accountRepo.FindByAccountID(c.Request.Context(), accountIDObjectID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized4"})
 			c.Abort()

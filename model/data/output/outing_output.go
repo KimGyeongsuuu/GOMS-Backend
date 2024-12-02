@@ -3,10 +3,12 @@ package output
 import (
 	"GOMS-BACKEND-GO/model/data/constant"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type OutingStudentOutput struct {
-	AccountID   uint64
+	AccountID   primitive.ObjectID
 	Name        string
 	Grade       int
 	Major       constant.Major

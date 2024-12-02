@@ -5,17 +5,18 @@ import (
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
-	"fmt"
 	"net/http"
 )
 
 type LateService struct {
-	lateRepo model.LateRepository
+	lateRepo    model.LateRepository
+	accountRepo model.AccountRepository
 }
 
-func NewLateService(lateRepo model.LateRepository) *LateService {
+func NewLateService(lateRepo model.LateRepository, accountRepo model.AccountRepository) *LateService {
 	return &LateService{
-		lateRepo: lateRepo,
+		lateRepo:    lateRepo,
+		accountRepo: accountRepo,
 	}
 }
 
@@ -26,19 +27,20 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 	}
 
 	var outputList []output.LateOutput
-	fmt.Println(len(lates))
 	for _, late := range lates {
-		if late.Account == nil {
-			return nil, status.NewError(http.StatusNotFound, fmt.Sprintf("late.Account is nil for late ID: %d", late.Account.ID))
+		accountDomain, err := service.accountRepo.FindByAccountID(ctx, late.AccountID)
+
+		if err != nil {
+			return nil, status.NewError(http.StatusInternalServerError, "find by account id error")
 		}
 
 		output := output.LateOutput{
-			AccountID:  late.Account.ID,
-			Name:       late.Account.Name,
-			Major:      late.Account.Major,
-			Grade:      late.Account.Grade,
-			Gender:     late.Account.Gender,
-			ProfileURL: late.Account.ProfileURL,
+			AccountID:  accountDomain.ID,
+			Name:       accountDomain.Name,
+			Major:      accountDomain.Major,
+			Grade:      accountDomain.Grade,
+			Gender:     accountDomain.Gender,
+			ProfileURL: accountDomain.ProfileURL,
 		}
 		outputList = append(outputList, output)
 	}

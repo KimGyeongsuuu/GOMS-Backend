@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StudentCouncilController struct {
@@ -34,7 +35,7 @@ func (controller *StudentCouncilController) CreateOuting(ctx *gin.Context) {
 
 }
 
-func (controller *StudentCouncilController) FindOutingList(ctx *gin.Context) {
+func (controller *StudentCouncilController) FindAccountList(ctx *gin.Context) {
 
 	accounts, err := controller.studentCouncilUseCase.FindAllAccount(ctx)
 
@@ -119,8 +120,7 @@ func (controller *StudentCouncilController) UpdateAuthority(ctx *gin.Context) {
 func (controller *StudentCouncilController) AddBlackList(ctx *gin.Context) {
 	accountIDParam := ctx.Param("accountID")
 
-	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
-
+	accountID, err := primitive.ObjectIDFromHex(accountIDParam)
 	if err != nil {
 		ctx.Error(err)
 		return
@@ -138,7 +138,7 @@ func (controller *StudentCouncilController) AddBlackList(ctx *gin.Context) {
 func (controller *StudentCouncilController) DeleteBlackList(ctx *gin.Context) {
 	accountIDParam := ctx.Param("accountID")
 
-	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
+	accountID, err := primitive.ObjectIDFromHex(accountIDParam)
 	if err != nil {
 		ctx.Error(err)
 		return
@@ -157,9 +157,9 @@ func (controller *StudentCouncilController) DeleteBlackList(ctx *gin.Context) {
 func (controller *StudentCouncilController) DeleteOutingStudent(ctx *gin.Context) {
 	accountIDParam := ctx.Param("accountID")
 
-	accountID, err := strconv.ParseUint(accountIDParam, 10, 64)
+	accountID, err := primitive.ObjectIDFromHex(accountIDParam)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid accountID"})
+		ctx.Error(err)
 		return
 	}
 
@@ -182,6 +182,7 @@ func (controller *StudentCouncilController) FindLateList(ctx *gin.Context) {
 	}
 
 	lateStudents, err := controller.studentCouncilUseCase.FindLateStudentByDate(ctx, date)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch late students."})
 		return

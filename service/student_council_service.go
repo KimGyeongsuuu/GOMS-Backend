@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StudentCouncilService struct {
@@ -90,6 +91,11 @@ func (service *StudentCouncilService) SearchAccount(ctx context.Context, account
 	var accountOutputs []output.AccountOutput
 
 	for _, account := range accounts {
+
+		isBlackList, err := service.blackListRepo.ExistsByAccountID(ctx, account.ID)
+		if err != nil {
+			return nil, status.NewError(http.StatusInternalServerError, "black list error")
+		}
 		accountOutput := output.AccountOutput{
 			AccountID:   account.ID,
 			Name:        account.Name,
@@ -97,7 +103,7 @@ func (service *StudentCouncilService) SearchAccount(ctx context.Context, account
 			Grade:       account.Grade,
 			ProfileURL:  account.ProfileURL,
 			Authority:   account.Authority,
-			IsBlackList: false,
+			IsBlackList: isBlackList,
 		}
 
 		accountOutputs = append(accountOutputs, accountOutput)
@@ -118,7 +124,7 @@ func (service *StudentCouncilService) UpdateAccountAuthority(ctx context.Context
 
 }
 
-func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountID uint64) error {
+func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountID primitive.ObjectID) error {
 	expiration := time.Duration(service.outingConfig.OutingBlacklistExp) * time.Second
 
 	blackList := &model.BlackList{
@@ -130,7 +136,7 @@ func (service *StudentCouncilService) AddBlackList(ctx context.Context, accountI
 	return nil
 }
 
-func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, accountID uint64) error {
+func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, accountID primitive.ObjectID) error {
 	outingBlackList, err := service.blackListRepo.FindBlackListByAccountID(ctx, accountID)
 	if err != nil {
 		return status.NewError(http.StatusInternalServerError, fmt.Sprintf("blacklist not found for account ID: %d", accountID))
@@ -143,14 +149,13 @@ func (service *StudentCouncilService) ExcludeBlackList(ctx context.Context, acco
 	return nil
 }
 
-func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, accountID uint64) error {
+func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, accountID primitive.ObjectID) error {
 	exists, err := service.outingRepo.ExistsOutingByAccountID(ctx, accountID)
 	if err != nil {
 		return status.NewError(http.StatusInternalServerError, "delete outing student error")
 	}
 	if !exists {
 		return status.NewError(http.StatusNotFound, "not outing student")
-
 	}
 
 	deleteErr := service.outingRepo.DeleteOutingByAccountID(ctx, accountID)
@@ -164,19 +169,27 @@ func (service *StudentCouncilService) DeleteOutingStudent(ctx context.Context, a
 
 func (service *StudentCouncilService) FindLateStudentByDate(ctx context.Context, date time.Time) ([]output.LateOutput, error) {
 	lates, err := service.lateRepo.FindLateByCreatedAt(ctx, date)
+
 	if err != nil {
 		return []output.LateOutput{}, nil
 	}
 
 	var outputList []output.LateOutput
 	for _, late := range lates {
+
+		accountDomain, err := service.accountRepo.FindByAccountID(ctx, late.AccountID)
+
+		if err != nil {
+			return nil, status.NewError(http.StatusInternalServerError, "find by account id error")
+		}
+
 		outputItem := output.LateOutput{
-			AccountID:  late.Account.ID,
-			Name:       late.Account.Name,
-			Major:      late.Account.Major,
-			Grade:      late.Account.Grade,
-			Gender:     late.Account.Gender,
-			ProfileURL: late.Account.ProfileURL,
+			AccountID:  late.AccountID,
+			Name:       accountDomain.Name,
+			Major:      accountDomain.Major,
+			Grade:      accountDomain.Grade,
+			Gender:     accountDomain.Gender,
+			ProfileURL: accountDomain.ProfileURL,
 		}
 		outputList = append(outputList, outputItem)
 	}

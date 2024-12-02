@@ -10,14 +10,20 @@ outing:
 
 data:
   mysql:  
-    user: ${DB_USER}
-    pass: ${DB_PASSWORD}
-    host: ${DB_HOST}
-    port: ${DB_PORT}
-    db: ${DB_NAME}
+    user: ${MYSQL_USER}
+    pass: ${MYSQL_PASSWORD}
+    host: ${MYSQL_HOST}
+    port: ${MYSQL_PORT}
+    db: ${MYSQL_NAME}
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
+  mongo:  
+    user: ${MONGO_USER}
+    pass: ${MONGO_PASSWORD}
+    host: ${MONGO_HOST}
+    port: ${MONGO_PORT}
+    db: ${MONGO_NAME}
 
 email:
   id: ${EMAIL_ID}

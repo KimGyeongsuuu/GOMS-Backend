@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Token struct {
@@ -22,7 +23,7 @@ type Token struct {
 }
 
 type GenerateToken interface {
-	GenerateToken(ctx context.Context, accountId uint64, authority constant.Authority) (output.TokenOutput, error)
+	GenerateToken(ctx context.Context, accountId primitive.ObjectID, authority constant.Authority) (output.TokenOutput, error)
 }
 
 type ParseToken interface {
@@ -37,7 +38,7 @@ func NewToken(jwtConfig *config.JWTConfig, rdb *redis.Client, refreshRepo *repos
 	}
 }
 
-func (token *Token) GenerateToken(ctx context.Context, accountId uint64, authority constant.Authority) (output.TokenOutput, error) {
+func (token *Token) GenerateToken(ctx context.Context, accountId primitive.ObjectID, authority constant.Authority) (output.TokenOutput, error) {
 	accessToken, err := token.generateAccessToken(accountId, authority)
 	if err != nil {
 		return output.TokenOutput{}, err
@@ -59,9 +60,9 @@ func (token *Token) GenerateToken(ctx context.Context, accountId uint64, authori
 	}, nil
 }
 
-func (token *Token) generateAccessToken(accountId uint64, authority constant.Authority) (string, error) {
+func (token *Token) generateAccessToken(accountId primitive.ObjectID, authority constant.Authority) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":       accountId,
+		"sub":       accountId.Hex(),
 		"authority": authority,
 		"exp":       time.Now().Add(time.Duration(token.jwtConfig.AccessExp) * time.Second).Unix(),
 		"iat":       time.Now().Unix(),
@@ -74,7 +75,7 @@ func (token *Token) generateAccessToken(accountId uint64, authority constant.Aut
 	return signedToken, nil
 }
 
-func (token *Token) generateRefreshToken(ctx context.Context, accountId uint64) (string, error) {
+func (token *Token) generateRefreshToken(ctx context.Context, accountId primitive.ObjectID) (string, error) {
 	claims := jwt.MapClaims{
 		"sub": accountId,
 		"exp": time.Now().Add(time.Duration(token.jwtConfig.RefreshExp) * time.Second).Unix(),

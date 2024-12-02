@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -40,7 +41,7 @@ func (suite *AuthServiceTestSuite) TestSignIn() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
 				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
-						ID:       1,
+						ID:       primitive.NewObjectID(),
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
@@ -60,7 +61,7 @@ func (suite *AuthServiceTestSuite) TestSignIn() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
 				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
-						ID:       1,
+						ID:       primitive.NewObjectID(),
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
@@ -82,7 +83,7 @@ func (suite *AuthServiceTestSuite) TestSignIn() {
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("rudtn1991!"), bcrypt.DefaultCost)
 				suite.mockAccountRepo.On("FindByEmail", mock.Anything, "kskim@nurilab.com").
 					Return(&model.Account{
-						ID:       1,
+						ID:       primitive.NewObjectID(),
 						Email:    "kskim@nurilab.com",
 						Password: string(hashedPassword),
 					}, nil).Once()
