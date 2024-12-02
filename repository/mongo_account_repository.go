@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"GOMS-BACKEND-GO/global/error/status"
 	"GOMS-BACKEND-GO/model"
 	"GOMS-BACKEND-GO/model/data/input"
 	"context"
+	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -38,7 +40,7 @@ func (repository *MongoAccountRepository) FindByEmail(ctx context.Context, email
 	err := repository.collection.FindOne(ctx, bson.M{"email": email}).Decode(&account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, err
+			return nil, status.NewError(http.StatusNotFound, "err no documents")
 		}
 		return nil, err
 	}
@@ -50,7 +52,7 @@ func (repository *MongoAccountRepository) FindByAccountID(ctx context.Context, a
 	err := repository.collection.FindOne(ctx, bson.M{"_id": accountID}).Decode(&account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, err
+			return nil, status.NewError(http.StatusNotFound, "err no documents")
 		}
 		return nil, err
 	}
@@ -58,19 +60,20 @@ func (repository *MongoAccountRepository) FindByAccountID(ctx context.Context, a
 }
 
 func (repository *MongoAccountRepository) FindAllAccount(ctx context.Context) ([]model.Account, error) {
-	var accounts []model.Account
-	cursor, err := repository.collection.Find(ctx, bson.M{})
+	var accounts []model.Account                             // Account 타입의 빈 배열 생성
+	cursor, err := repository.collection.Find(ctx, bson.M{}) // account 컬렉션의 모든 데이터 조회
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(ctx) // defer 지연 호출 함수를 통해 메서드가 종료되기 직전에 cursor를 닫기
 
-	for cursor.Next(ctx) {
+	for cursor.Next(ctx) { // cursor.Next()를 통해서 다음 문서에 문제가 없을 때까지 문서 읽기 반복
+
 		var account model.Account
-		if err := cursor.Decode(&account); err != nil {
+		if err := cursor.Decode(&account); err != nil { // ccursor필드는 cursor.Next()를 통해 계속 해서 다음 문서를 가리킴 -> 계속 바뀌는 문서 -> 문서를 account타입으로 디코딩
 			return nil, err
 		}
-		accounts = append(accounts, account)
+		accounts = append(accounts, account) // 디코딩된 account를 accounts 빈 배열에 추가
 	}
 
 	return accounts, nil

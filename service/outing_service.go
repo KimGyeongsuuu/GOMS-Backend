@@ -113,7 +113,7 @@ func (service *OutingService) SearchOutingStudent(ctx context.Context, name stri
 	outings, err := service.outingRepo.FindByOutingAccountNameContaining(ctx, name)
 
 	if err != nil {
-		return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
+		return nil, status.NewError(http.StatusNotFound, "failed to find account")
 	}
 
 	var outingStudentOutputs []output.OutingStudentOutput
@@ -122,7 +122,7 @@ func (service *OutingService) SearchOutingStudent(ctx context.Context, name stri
 		account, err := service.accountRepo.FindByAccountID(ctx, outing.AccountID)
 
 		if err != nil {
-			return nil, status.NewError(http.StatusInternalServerError, "failed to find account")
+			return nil, status.NewError(http.StatusNotFound, "failed to find account")
 		}
 
 		outingStudentOutput := output.OutingStudentOutput{
