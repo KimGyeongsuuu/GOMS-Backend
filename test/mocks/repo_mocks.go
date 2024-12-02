@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Account
@@ -38,7 +39,7 @@ func (a *MockAccountRepository) FindByEmail(ctx context.Context, email string) (
 	return nil, args.Error(1)
 }
 
-func (a *MockAccountRepository) FindByAccountID(ctx context.Context, accountID uint64) (*model.Account, error) {
+func (a *MockAccountRepository) FindByAccountID(ctx context.Context, accountID primitive.ObjectID) (*model.Account, error) {
 	args := a.Called(ctx, accountID)
 	if result := args.Get(0); result != nil {
 		return result.(*model.Account), args.Error(1)
@@ -158,12 +159,12 @@ func (o *OutingRepository) SaveOutingStudnet(ctx context.Context, outing *model.
 	return args.Error(0)
 }
 
-func (o *OutingRepository) ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error) {
+func (o *OutingRepository) ExistsOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) (bool, error) {
 	args := o.Called(ctx, accountID)
 	return args.Bool(0), args.Error(1)
 }
 
-func (o *OutingRepository) DeleteOutingByAccountID(ctx context.Context, accountID uint64) error {
+func (o *OutingRepository) DeleteOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) error {
 	args := o.Called(ctx, accountID)
 	return args.Error(0)
 }

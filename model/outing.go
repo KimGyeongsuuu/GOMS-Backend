@@ -7,12 +7,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Outing struct {
-	ID        uint64
-	AccountID uint64 `gorm:"not null;index"`
-	Account   *Account
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	AccountID primitive.ObjectID `bson:"account_id"`
 	CreatedAt time.Time
 }
 type OutingUseCase interface {
@@ -23,9 +23,9 @@ type OutingUseCase interface {
 }
 
 type OutingRepository interface {
-	SaveOutingStudnet(ctx context.Context, outing *Outing) error
-	ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error)
-	DeleteOutingByAccountID(ctx context.Context, accountID uint64) error
+	SaveOutingStudent(ctx context.Context, outing *Outing) error
+	ExistsOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) (bool, error)
+	DeleteOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) error
 	FindAllOuting(ctx context.Context) ([]Outing, error)
 	FindByOutingAccountNameContaining(ctx context.Context, name string) ([]Outing, error)
 }

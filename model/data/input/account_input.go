@@ -1,6 +1,10 @@
 package input
 
-import "GOMS-BACKEND-GO/model/data/constant"
+import (
+	"GOMS-BACKEND-GO/model/data/constant"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type SearchAccountInput struct {
 	Grade       *int
@@ -12,6 +16,6 @@ type SearchAccountInput struct {
 }
 
 type UpdateAccountAuthorityInput struct {
-	AccountID uint64
+	AccountID primitive.ObjectID
 	Authority constant.Authority
 }

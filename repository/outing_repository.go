@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gorm.io/gorm"
 )
 
@@ -18,12 +19,12 @@ func NewOutingRepository(db *gorm.DB) *OutingRepository {
 	}
 }
 
-func (repository *OutingRepository) SaveOutingStudnet(ctx context.Context, outing *model.Outing) error {
+func (repository *OutingRepository) SaveOutingStudent(ctx context.Context, outing *model.Outing) error {
 	result := repository.db.WithContext(ctx).Create(outing)
 	return result.Error
 }
 
-func (repository *OutingRepository) ExistsOutingByAccountID(ctx context.Context, accountID uint64) (bool, error) {
+func (repository *OutingRepository) ExistsOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) (bool, error) {
 	var count int64
 	result := repository.db.WithContext(ctx).Model(&model.Outing{}).Where("account_id = ?", accountID).Count(&count)
 
@@ -34,7 +35,7 @@ func (repository *OutingRepository) ExistsOutingByAccountID(ctx context.Context,
 	return count > 0, nil
 }
 
-func (repository *OutingRepository) DeleteOutingByAccountID(ctx context.Context, accountID uint64) error {
+func (repository *OutingRepository) DeleteOutingByAccountID(ctx context.Context, accountID primitive.ObjectID) error {
 	result := repository.db.WithContext(ctx).Where("account_id = ?", accountID).Delete(&model.Outing{})
 	return result.Error
 }

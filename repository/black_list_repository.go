@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BlackListRepository struct {
@@ -22,7 +22,7 @@ func NewBlackListRepository(rdb *redis.Client) *BlackListRepository {
 }
 
 func (repository *BlackListRepository) SaveBlackList(ctx context.Context, blackList *model.BlackList) error {
-	key := "blacklist:" + strconv.FormatUint(blackList.AccountID, 10)
+	key := "blacklist:" + blackList.AccountID.Hex()
 
 	blackListJson, err := json.Marshal(blackList)
 	if err != nil {
@@ -39,8 +39,8 @@ func (repository *BlackListRepository) SaveBlackList(ctx context.Context, blackL
 	return nil
 }
 
-func (repository *BlackListRepository) FindBlackListByAccountID(ctx context.Context, accountID uint64) (*model.BlackList, error) {
-	key := "blacklist:" + strconv.FormatUint(accountID, 10)
+func (repository *BlackListRepository) FindBlackListByAccountID(ctx context.Context, accountID primitive.ObjectID) (*model.BlackList, error) {
+	key := "blacklist:" + accountID.Hex()
 
 	blackListJson, err := repository.rdb.Get(ctx, key).Result()
 	if err == redis.Nil {
@@ -59,7 +59,7 @@ func (repository *BlackListRepository) FindBlackListByAccountID(ctx context.Cont
 	return &blackList, nil
 }
 func (repository *BlackListRepository) DeleteBlackList(ctx context.Context, blackList *model.BlackList) error {
-	key := "blacklist:" + strconv.FormatUint(blackList.AccountID, 10)
+	key := "blacklist:" + blackList.AccountID.Hex()
 
 	err := repository.rdb.Del(ctx, key).Err()
 	if err != nil {
@@ -68,4 +68,15 @@ func (repository *BlackListRepository) DeleteBlackList(ctx context.Context, blac
 
 	return nil
 
+}
+
+func (repository *BlackListRepository) ExistsByAccountID(ctx context.Context, accountID primitive.ObjectID) (bool, error) {
+	key := "blacklist:" + accountID.Hex()
+
+	count, err := repository.rdb.Exists(ctx, key).Result()
+	if err != nil {
+		return false, fmt.Errorf("failed to check existence in Redis: %v", err)
+	}
+
+	return count > 0, nil
 }

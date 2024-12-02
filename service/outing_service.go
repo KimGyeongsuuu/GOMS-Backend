@@ -57,11 +57,11 @@ func (service *OutingService) OutingStudent(c *gin.Context, ctx context.Context,
 		service.outingRepo.DeleteOutingByAccountID(ctx, accountID)
 	} else {
 		outing := &model.Outing{
-			Account:   account,
+			AccountID: account.ID,
 			CreatedAt: time.Now(),
 		}
 		// 아직 외출을 하지 않은 학생이라면 외출자 명단에 추가
-		service.outingRepo.SaveOutingStudnet(ctx, outing)
+		service.outingRepo.SaveOutingStudent(ctx, outing)
 
 	}
 

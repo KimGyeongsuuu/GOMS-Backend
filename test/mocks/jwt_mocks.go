@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // token
@@ -20,7 +21,7 @@ func NewGenerateTokenAdapter(t *testing.T) *MockGenerateTokenAdapter {
 	}
 }
 
-func (m *MockGenerateTokenAdapter) GenerateToken(ctx context.Context, accountId uint64, authority constant.Authority) (output.TokenOutput, error) {
+func (m *MockGenerateTokenAdapter) GenerateToken(ctx context.Context, accountId primitive.ObjectID, authority constant.Authority) (output.TokenOutput, error) {
 	args := m.Called(ctx, accountId, authority)
 	result, ok := args.Get(0).(output.TokenOutput)
 	if !ok {

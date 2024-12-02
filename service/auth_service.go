@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/exp/rand"
 )
 
@@ -58,16 +59,16 @@ func (service *AuthService) SignUp(ctx context.Context, input input.SignUpInput)
 	}
 
 	// 인증된 사용자 여부 검증
-	authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
-	if err != nil {
-		return status.NewError(http.StatusInternalServerError, "find authentication by email failed")
-	}
-	if authentication == nil {
-		return status.NewError(http.StatusNotFound, "authentication not found")
-	}
-	if !authentication.IsAuthenticated {
-		return status.NewError(http.StatusUnauthorized, "authentication not authenticated")
-	}
+	// authentication, err := service.authenticationRepo.FindByEmail(ctx, input.Email)
+	// if err != nil {
+	// 	return status.NewError(http.StatusInternalServerError, "find authentication by email failed")
+	// }
+	// if authentication == nil {
+	// 	return status.NewError(http.StatusNotFound, "authentication not found")
+	// }
+	// if !authentication.IsAuthenticated {
+	// 	return status.NewError(http.StatusUnauthorized, "authentication not authenticated")
+	// }
 
 	// 패스워드 인코딩
 	encodedPassword, err := service.utilPassword.EncodePassword(input.Password)
@@ -122,10 +123,11 @@ func (service *AuthService) TokenReissue(ctx context.Context, refreshToken strin
 	if service.accountRepo == nil {
 		return output.TokenOutput{}, status.NewError(http.StatusInternalServerError, "accountRepo is not initialized")
 	}
-	if refreshTokenDomain.AccountID == 0 {
+	if refreshTokenDomain.AccountID == primitive.NilObjectID {
 		return output.TokenOutput{}, status.NewError(http.StatusBadRequest, "invalid AccountID in refresh token")
 	}
 
+	fmt.Println("refresh token domain account id", refreshTokenDomain.AccountID)
 	accountDomain, err := service.accountRepo.FindByAccountID(ctx, refreshTokenDomain.AccountID)
 	if err != nil {
 		return output.TokenOutput{}, status.NewError(http.StatusNotFound, "account not found")

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StudentCouncilUseCase interface {
@@ -14,9 +15,9 @@ type StudentCouncilUseCase interface {
 	FindAllAccount(ctx context.Context) ([]output.AccountOutput, error)
 	SearchAccount(ctx context.Context, accountInput *input.SearchAccountInput) ([]output.AccountOutput, error)
 	UpdateAccountAuthority(ctx context.Context, authorityInput *input.UpdateAccountAuthorityInput) error
-	AddBlackList(ctx context.Context, accountID uint64) error
-	ExcludeBlackList(ctx context.Context, accountID uint64) error
-	DeleteOutingStudent(ctx context.Context, accountID uint64) error
+	AddBlackList(ctx context.Context, accountID primitive.ObjectID) error
+	ExcludeBlackList(ctx context.Context, accountID primitive.ObjectID) error
+	DeleteOutingStudent(ctx context.Context, accountID primitive.ObjectID) error
 	FindLateStudentByDate(ctx context.Context, date time.Time) ([]output.LateOutput, error)
 }
 

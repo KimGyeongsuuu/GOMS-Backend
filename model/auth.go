@@ -5,11 +5,13 @@ import (
 	"GOMS-BACKEND-GO/model/data/output"
 	"context"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type RefreshToken struct {
 	RefreshToken string
-	AccountID    uint64
+	AccountID    primitive.ObjectID
 	ExpiredAt    int64
 }
 
