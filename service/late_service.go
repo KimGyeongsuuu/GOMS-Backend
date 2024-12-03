@@ -28,6 +28,7 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 
 	var outputList []output.LateOutput
 	for _, late := range lates {
+
 		accountDomain, err := service.accountRepo.FindByAccountID(ctx, late.AccountID)
 
 		if err != nil {
@@ -44,5 +45,6 @@ func (service *LateService) GetTop3LateStudent(ctx context.Context) ([]output.La
 		}
 		outputList = append(outputList, output)
 	}
+
 	return outputList, nil
 }
