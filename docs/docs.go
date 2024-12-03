@@ -17,14 +17,14 @@ const docTemplate = `{
     "paths": {
         "/api/v1/auth": {
             "patch": {
-                "description": "Refresh the access and refresh tokens using a valid refresh token.",
+                "description": "RefreshToken를 header로 받아서 요청.",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Reissue access and refresh tokens",
+                "summary": "토큰 재발급 Router",
                 "parameters": [
                     {
                         "type": "string",
@@ -53,7 +53,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Sign In for a user",
+                "summary": "로그인 Router",
                 "parameters": [
                     {
                         "description": "User login credentials",
@@ -84,7 +84,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Sign Up for a new user",
+                "summary": "회원가입 Router",
                 "parameters": [
                     {
                         "description": "User information",

@@ -47,7 +47,7 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Refresh the access and refresh tokens using a valid refresh token.
+      description: RefreshToken를 header로 받아서 요청.
       parameters:
       - description: Refresh Token
         in: header
@@ -61,7 +61,7 @@ paths:
           description: 토큰 재발급 성공
           schema:
             $ref: '#/definitions/output.TokenOutput'
-      summary: Reissue access and refresh tokens
+      summary: 토큰 재발급 Router
   /api/v1/auth/signin:
     post:
       consumes:
@@ -81,7 +81,7 @@ paths:
           description: 로그인 성공
           schema:
             $ref: '#/definitions/output.TokenOutput'
-      summary: Sign In for a user
+      summary: 로그인 Router
   /api/v1/auth/signup:
     post:
       consumes:
@@ -101,5 +101,5 @@ paths:
           description: User created successfully
           schema:
             type: string
-      summary: Sign Up for a new user
+      summary: 회원가입 Router
 swagger: "2.0"

@@ -21,7 +21,7 @@ func NewAuthController(authUseCase model.AuthUseCase) *AuthController {
 }
 
 // Sign Up Router
-// @Summary Sign Up for a new user
+// @Summary 회원가입 Router
 // @Description email인증 후 학과 정보를 통해 사용자 회원가입.
 // @Accept json
 // @Produce json
@@ -43,7 +43,7 @@ func (controller *AuthController) SignUp(ctx *gin.Context) {
 }
 
 // Sign In Router
-// @Summary Sign In for a user
+// @Summary 로그인 Router
 // @Description email과 password를 통해 로그인 후 토큰 발급.
 // @Accept json
 // @Produce json
@@ -72,7 +72,7 @@ func (controller *AuthController) SignIn(ctx *gin.Context) {
 }
 
 // Token Reissue Router
-// @Summary 토큰 재발급
+// @Summary 토큰 재발급 Router
 // @Description RefreshToken를 header로 받아서 요청.
 // @Accept json
 // @Produce json
