@@ -4,6 +4,7 @@ import (
 	"GOMS-BACKEND-GO/controller"
 	"GOMS-BACKEND-GO/database/cache"
 	"GOMS-BACKEND-GO/database/mongo"
+	_ "GOMS-BACKEND-GO/docs"
 	"GOMS-BACKEND-GO/global/auth/jwt"
 	"GOMS-BACKEND-GO/global/auth/jwt/middleware"
 	"GOMS-BACKEND-GO/global/config"
@@ -14,9 +15,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
@@ -65,6 +69,15 @@ func main() {
 	passwordUtil := util.NewPasswordUtil()
 
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Accept"},
+		ExposeHeaders: []string{"Content-Length"},
+		MaxAge:        3600,
+	}))
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// mongo
 	mongoAccountRepo := repository.NewMongoAccountRepository(mongodb)
